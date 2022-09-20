@@ -7,6 +7,8 @@ import net.fabricmc.example.config.ScreenElementWrapper;
 import net.fabricmc.example.config.annotations.*;
 import net.minecraft.util.Formatting;
 
+import static net.fabricmc.example.config.GuiTextures.GITHUB;
+
 public class MyModConfig implements Config {
     public static MyModConfig INSTANCE = new MyModConfig();
 
@@ -19,6 +21,16 @@ public class MyModConfig implements Config {
                 activeConfigCategory = ((MyModConfigEditor) wrapper.element).getSelectedCategoryName();
             }
         }
+    }
+
+    @Override
+    public void save() {
+
+    }
+
+    @Override
+    public Badge[] getBadges() {
+        return new Badge[] { new Badge(GITHUB, "https://github.com/u9g") };
     }
 
     @Override

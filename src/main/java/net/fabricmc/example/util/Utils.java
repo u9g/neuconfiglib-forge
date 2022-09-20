@@ -23,6 +23,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.LinkedList;
 import java.util.Locale;
+import java.util.Map;
+import java.util.NavigableMap;
 
 public class Utils {
 
@@ -127,6 +129,23 @@ public class Utils {
             default:
                 return "";
         }
+    }
+
+    /**
+     * From https://stackoverflow.com/questions/10711494/get-values-in-treemap-whose-string-keys-start-with-a-pattern
+     */
+    public static <T> Map<String, T> subMapWithKeysThatAreSuffixes(String prefix, NavigableMap<String, T> map) {
+        if ("".equals(prefix)) return map;
+        String lastKey = createLexicographicallyNextStringOfTheSameLength(prefix);
+        return map.subMap(prefix, true, lastKey, false);
+    }
+
+    public static String createLexicographicallyNextStringOfTheSameLength(String input) {
+        final int lastCharPosition = input.length() - 1;
+        String inputWithoutLastChar = input.substring(0, lastCharPosition);
+        char lastChar = input.charAt(lastCharPosition);
+        char incrementedLastChar = (char) (lastChar + 1);
+        return inputWithoutLastChar + incrementedLastChar;
     }
 
 //    public static boolean overlayShouldRender(RenderGameOverlayEvent.ElementType type, boolean... booleans) {

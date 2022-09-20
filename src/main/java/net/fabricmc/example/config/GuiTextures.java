@@ -28,5 +28,5 @@ public class GuiTextures {
     public static final Identifier slider_on_segment = new Identifier("configlib:core/slider/slider_on_segment.png");
     public static final Identifier slider_button_new = new Identifier("configlib:core/slider/slider_button.png");
 
-    private static final Identifier SEARCH_ICON = new Identifier("configlib:core/search.png");
+    public static final Identifier SEARCH_ICON = new Identifier("configlib:core/search.png");
 }
