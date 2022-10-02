@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "configlib",
   "version": "${version}",
-  "name": "Example Mod",
+  "name": "The Config Library!",
   "description": "This is an example description! Tell everyone what your mod is about!",
   "authors": [
     "Me!"
@@ -16,11 +16,11 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.ExampleMod"
+      "dev.u9g.configlib.ExampleMod"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "configlib.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.12.0",
