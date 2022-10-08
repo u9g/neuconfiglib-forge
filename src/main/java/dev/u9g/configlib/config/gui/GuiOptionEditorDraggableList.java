@@ -1,6 +1,8 @@
 package dev.u9g.configlib.config.gui;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.GlStateManager;
 import dev.u9g.configlib.M;
 import dev.u9g.configlib.config.GuiTextures;
 import dev.u9g.configlib.config.struct.ConfigProcessor;
@@ -8,10 +10,8 @@ import dev.u9g.configlib.util.Utils;
 import dev.u9g.configlib.util.lerp.LerpUtils;
 import dev.u9g.configlib.util.render.RenderUtils;
 import dev.u9g.configlib.util.render.TextRenderUtils;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.util.Window;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.util.EnumChatFormatting;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
@@ -56,25 +56,25 @@ public class GuiOptionEditorDraggableList extends GuiOptionEditor {
 
         int height = getHeight();
 
-        GlStateManager.color4f(1, 1, 1, 1);
+        GlStateManager.color(1, 1, 1, 1);
         M.C.getTextureManager().bindTexture(GuiTextures.button_tex);
         RenderUtils.drawTexturedRect(x + width / 6 - 24, y + 45 - 7 - 14, 48, 16);
 
-        TextRenderUtils.drawStringCenteredScaledMaxWidth("Add", M.C.textRenderer, x + width / 6, y + 45 - 7 - 6, false, 44, 0xFF303030);
+        TextRenderUtils.drawStringCenteredScaledMaxWidth("Add", M.C.fontRendererObj, x + width / 6, y + 45 - 7 - 6, false, 44, 0xFF303030);
 
         long currentTime = System.currentTimeMillis();
         if (trashHoverTime < 0) {
             float greenBlue = LerpUtils.clampZeroOne((currentTime + trashHoverTime) / 250f);
-            GlStateManager.color4f(1, greenBlue, greenBlue, 1);
+            GlStateManager.color(1, greenBlue, greenBlue, 1);
         } else {
             float greenBlue = LerpUtils.clampZeroOne((250 + trashHoverTime - currentTime) / 250f);
-            GlStateManager.color4f(1, greenBlue, greenBlue, 1);
+            GlStateManager.color(1, greenBlue, greenBlue, 1);
         }
         M.C.getTextureManager().bindTexture(GuiTextures.DELETE);
         Utils.drawTexturedRect(x + width / 6 + 27, y + 45 - 7 - 13, 11, 14, GL11.GL_NEAREST);
 
-        DrawableHelper.fill(x + 5, y + 45, x + width - 5, y + height - 5, 0xffdddddd);
-        DrawableHelper.fill(x + 6, y + 46, x + width - 6, y + height - 6, 0xff000000);
+        Gui.drawRect(x + 5, y + 45, x + width - 5, y + height - 5, 0xffdddddd);
+        Gui.drawRect(x + 6, y + 46, x + width - 6, y + height - 6, 0xff000000);
 
         int i = 0;
         int yOff = 0;
@@ -88,9 +88,9 @@ public class GuiOptionEditorDraggableList extends GuiOptionEditor {
             if (i++ != dragStartIndex) {
                 for (int multilineIndex = 0; multilineIndex < multilines.length; multilineIndex++) {
                     String line = multilines[multilineIndex];
-                    Utils.drawStringScaledMaxWidth(line + Formatting.RESET, M.C.textRenderer, x + 20, y + 50 + yOff + multilineIndex * 10, true, width - 20, 0xffffffff);
+                    Utils.drawStringScaledMaxWidth(line + EnumChatFormatting.RESET, M.C.fontRendererObj, x + 20, y + 50 + yOff + multilineIndex * 10, true, width - 20, 0xffffffff);
                 }
-                M.C.textRenderer.draw("\u2261", x + 10, y + 50 + yOff + ySize / 2 - 4, 0xffffff, true);
+                M.C.fontRendererObj.drawString("\u2261", x + 10, y + 50 + yOff + ySize / 2 - 4, 0xffffff, true);
             }
 
             yOff += ySize;
@@ -108,7 +108,7 @@ public class GuiOptionEditorDraggableList extends GuiOptionEditor {
             }
             remaining.removeAll(activeText);
 
-            TextRenderer fr = M.C.textRenderer;
+            FontRenderer fr = M.C.fontRendererObj;
             int dropdownWidth = Math.min(width / 2 - 10, 150);
             int left = dragOffsetX;
             int top = dragOffsetY;
@@ -117,11 +117,11 @@ public class GuiOptionEditorDraggableList extends GuiOptionEditor {
 
             int main = 0xff202026;
             int outline = 0xff404046;
-            DrawableHelper.fill(left, top, left + 1, top + dropdownHeight, outline); //Left
-            DrawableHelper.fill(left + 1, top, left + dropdownWidth, top + 1, outline); //Top
-            DrawableHelper.fill(left + dropdownWidth - 1, top + 1, left + dropdownWidth, top + dropdownHeight, outline); //Right
-            DrawableHelper.fill(left + 1, top + dropdownHeight - 1, left + dropdownWidth - 1, top + dropdownHeight, outline); //Bottom
-            DrawableHelper.fill(left + 1, top + 1, left + dropdownWidth - 1, top + dropdownHeight - 1, main); //Middle
+            Gui.drawRect(left, top, left + 1, top + dropdownHeight, outline); //Left
+            Gui.drawRect(left + 1, top, left + dropdownWidth, top + 1, outline); //Top
+            Gui.drawRect(left + dropdownWidth - 1, top + 1, left + dropdownWidth, top + dropdownHeight, outline); //Right
+            Gui.drawRect(left + 1, top + dropdownHeight - 1, left + dropdownWidth - 1, top + dropdownHeight, outline); //Bottom
+            Gui.drawRect(left + 1, top + 1, left + dropdownWidth - 1, top + dropdownHeight - 1, main); //Middle
 
             int dropdownY = -1;
             for (int strIndex : remaining) {
@@ -145,9 +145,9 @@ public class GuiOptionEditorDraggableList extends GuiOptionEditor {
 
             if (opacity < 20) return;
 
-            Window scaledResolution = new Window(M.C);
-            int mouseX = Mouse.getX() * scaledResolution.getWidth() / M.C.width;
-            int mouseY = scaledResolution.getHeight() - Mouse.getY() * scaledResolution.getHeight() / M.C.height - 1;
+            ScaledResolution scaledResolution = new ScaledResolution(M.C);
+            int mouseX = Mouse.getX() * scaledResolution.getScaledWidth() / M.C.displayWidth;
+            int mouseY = scaledResolution.getScaledHeight() - Mouse.getY() * scaledResolution.getScaledHeight() / M.C.displayHeight - 1;
 
             String str = exampleText[currentDragging];
 
@@ -156,12 +156,12 @@ public class GuiOptionEditorDraggableList extends GuiOptionEditor {
             GlStateManager.enableBlend();
             for (int multilineIndex = 0; multilineIndex < multilines.length; multilineIndex++) {
                 String line = multilines[multilineIndex];
-                Utils.drawStringScaledMaxWidth(line + Formatting.RESET, M.C.textRenderer, dragOffsetX + mouseX + 10, dragOffsetY + mouseY + multilineIndex * 10, true, width - 20, 0xffffff | (opacity << 24));
+                Utils.drawStringScaledMaxWidth(line + EnumChatFormatting.RESET, M.C.fontRendererObj, dragOffsetX + mouseX + 10, dragOffsetY + mouseY + multilineIndex * 10, true, width - 20, 0xffffff | (opacity << 24));
             }
 
             int ySize = multilines.length * 10;
 
-            M.C.textRenderer.draw("\u2261", dragOffsetX + mouseX, dragOffsetY + mouseY + ySize / 2 - 4, 0xffffff, true);
+            M.C.fontRendererObj.drawString("\u2261", dragOffsetX + mouseX, dragOffsetY + mouseY + ySize / 2 - 4, 0xffffff, true);
         }
     }
 

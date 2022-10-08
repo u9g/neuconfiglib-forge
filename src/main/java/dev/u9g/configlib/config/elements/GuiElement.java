@@ -1,8 +1,8 @@
 package dev.u9g.configlib.config.elements;
 
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.GuiScreen;
 
-public abstract class GuiElement extends DrawableHelper {
+public abstract class GuiElement extends GuiScreen {
 
     public abstract void render();
 

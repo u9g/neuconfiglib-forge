@@ -3,13 +3,15 @@ package dev.u9g.configlib.config.gui;
 import dev.u9g.configlib.M;
 import dev.u9g.configlib.config.Position;
 import dev.u9g.configlib.util.Utils;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.util.Window;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ScaledResolution;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
-public class GuiPositionEditor extends Screen {
+import java.io.IOException;
+
+public class GuiPositionEditor extends GuiScreen {
 
     private final Position position;
     private Position originalPosition;
@@ -40,27 +42,27 @@ public class GuiPositionEditor extends Screen {
     }
 
     @Override
-    public void removed() {
-        super.removed();
+    public void onGuiClosed() {
+        super.onGuiClosed();
         closedCallback.run();
     }
 
     @Override
-    public void render(int mouseX, int mouseY, float partialTicks) {
-        super.render(mouseX, mouseY, partialTicks);
-        Window scaledResolution;
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        super.drawScreen(mouseX, mouseY, partialTicks);
+        ScaledResolution scaledResolution;
         if (guiScaleOverride >= 0) {
             scaledResolution = Utils.pushGuiScale(guiScaleOverride);
         } else {
-            scaledResolution = new Window(M.C);
+            scaledResolution = new ScaledResolution(M.C);
         }
 
-        this.width = scaledResolution.getWidth();
-        this.height = scaledResolution.getHeight();
-        mouseX = Mouse.getX() * width / M.C.width;
-        mouseY = height - Mouse.getY() * height / M.C.height - 1;
+        this.width = scaledResolution.getScaledWidth();
+        this.height = scaledResolution.getScaledHeight();
+        mouseX = Mouse.getX() * width / M.C.displayWidth;
+        mouseY = height - Mouse.getY() * height / M.C.displayHeight - 1;
 
-        renderBackground();
+        drawDefaultBackground();
 
         if (clicked) {
             grabbedX += position.moveX(mouseX - grabbedX, elementWidth, scaledResolution);
@@ -74,30 +76,30 @@ public class GuiPositionEditor extends Screen {
 
         if (position.isCenterX()) x -= elementWidth / 2;
         if (position.isCenterY()) y -= elementHeight / 2;
-        DrawableHelper.fill(x, y, x + elementWidth, y + elementHeight, 0x80404040);
+        Gui.drawRect(x, y, x + elementWidth, y + elementHeight, 0x80404040);
 
         if (guiScaleOverride >= 0) {
             Utils.pushGuiScale(-1);
         }
 
-        scaledResolution = new Window(M.C);
-        Utils.drawStringCentered("Position Editor", M.C.textRenderer, scaledResolution.getWidth() / 2, 8, true, 0xffffff);
-        Utils.drawStringCentered("R to Reset - Arrow keys/mouse to move", M.C.textRenderer, scaledResolution.getWidth() / 2, 18, true, 0xffffff);
+        scaledResolution = new ScaledResolution(M.C);
+        Utils.drawStringCentered("Position Editor", M.C.fontRendererObj, scaledResolution.getScaledWidth() / 2, 8, true, 0xffffff);
+        Utils.drawStringCentered("R to Reset - Arrow keys/mouse to move", M.C.fontRendererObj, scaledResolution.getScaledWidth() / 2, 18, true, 0xffffff);
     }
 
     @Override
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) {
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         super.mouseClicked(mouseX, mouseY, mouseButton);
 
         if (mouseButton == 0) {
-            Window scaledResolution;
+            ScaledResolution scaledResolution;
             if (guiScaleOverride >= 0) {
                 scaledResolution = Utils.pushGuiScale(guiScaleOverride);
             } else {
-                scaledResolution = new Window(M.C);
+                scaledResolution = new ScaledResolution(M.C);
             }
-            mouseX = Mouse.getX() * width / M.C.width;
-            mouseY = height - Mouse.getY() * height / M.C.height - 1;
+            mouseX = Mouse.getX() * width / M.C.displayWidth;
+            mouseY = height - Mouse.getY() * height / M.C.displayHeight - 1;
 
             int x = position.getAbsX(scaledResolution, elementWidth);
             int y = position.getAbsY(scaledResolution, elementHeight);
@@ -117,7 +119,7 @@ public class GuiPositionEditor extends Screen {
     }
 
     @Override
-    protected void keyPressed(char typedChar, int keyCode) {
+    protected void keyTyped(char typedChar, int keyCode) throws IOException {
         Keyboard.enableRepeatEvents(true);
 
         if (keyCode == Keyboard.KEY_R) {
@@ -126,16 +128,16 @@ public class GuiPositionEditor extends Screen {
             boolean shiftHeld = Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) || Keyboard.isKeyDown(Keyboard.KEY_RSHIFT);
             int dist = shiftHeld ? 10 : 1;
             if (keyCode == Keyboard.KEY_DOWN) {
-                position.moveY(dist, elementHeight, new Window(M.C));
+                position.moveY(dist, elementHeight, new ScaledResolution(M.C));
             } else if (keyCode == Keyboard.KEY_UP) {
-                position.moveY(-dist, elementHeight, new Window(M.C));
+                position.moveY(-dist, elementHeight, new ScaledResolution(M.C));
             } else if (keyCode == Keyboard.KEY_LEFT) {
-                position.moveX(-dist, elementWidth, new Window(M.C));
+                position.moveX(-dist, elementWidth, new ScaledResolution(M.C));
             } else if (keyCode == Keyboard.KEY_RIGHT) {
-                position.moveX(dist, elementWidth, new Window(M.C));
+                position.moveX(dist, elementWidth, new ScaledResolution(M.C));
             }
         }
-        super.keyPressed(typedChar, keyCode);
+        super.keyTyped(typedChar, keyCode);
     }
 
     @Override
@@ -145,18 +147,18 @@ public class GuiPositionEditor extends Screen {
     }
 
     @Override
-    protected void mouseDragged(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
-        super.mouseDragged(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
+    protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
+        super.mouseClickMove(mouseX, mouseY, clickedMouseButton, timeSinceLastClick);
 
         if (clicked) {
-            Window scaledResolution;
+            ScaledResolution scaledResolution;
             if (guiScaleOverride >= 0) {
                 scaledResolution = Utils.pushGuiScale(guiScaleOverride);
             } else {
-                scaledResolution = new Window(M.C);
+                scaledResolution = new ScaledResolution(M.C);
             }
-            mouseX = Mouse.getX() * width / M.C.width;
-            mouseY = height - Mouse.getY() * height / M.C.height - 1;
+            mouseX = Mouse.getX() * width / M.C.displayWidth;
+            mouseY = height - Mouse.getY() * height / M.C.displayHeight - 1;
 
             grabbedX += position.moveX(mouseX - grabbedX, elementWidth, scaledResolution);
             grabbedY += position.moveY(mouseY - grabbedY, elementHeight, scaledResolution);

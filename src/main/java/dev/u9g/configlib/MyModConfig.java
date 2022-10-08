@@ -6,7 +6,7 @@ import dev.u9g.configlib.config.MyModConfigEditor;
 import dev.u9g.configlib.config.annotations.*;
 import dev.u9g.configlib.config.Config;
 import dev.u9g.configlib.config.ScreenElementWrapper;
-import net.minecraft.util.Formatting;
+import net.minecraft.util.EnumChatFormatting;
 
 public class MyModConfig implements Config {
     public static MyModConfig INSTANCE = new MyModConfig();
@@ -34,7 +34,7 @@ public class MyModConfig implements Config {
 
     @Override
     public String getHeaderText() {
-        return "MyGreatMod v1.0.0 by " + Formatting.AQUA + "U9G" + Formatting.RESET + ", config by " + Formatting.DARK_PURPLE + "Moulberry";
+        return "MyGreatMod v1.0.0 by " + EnumChatFormatting.AQUA + "U9G" + EnumChatFormatting.RESET + ", config by " + EnumChatFormatting.DARK_PURPLE + "Moulberry";
     }
 
     @Expose

@@ -1,8 +1,8 @@
 package dev.u9g.configlib.util.render;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.DiffuseLighting;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.RenderHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ public class TextRenderUtils {
         }
     }
 
-    public static void drawStringScaledMaxWidth(String str, TextRenderer fr, float x, float y, boolean shadow, int len, int colour) {
+    public static void drawStringScaledMaxWidth(String str, FontRenderer fr, float x, float y, boolean shadow, int len, int colour) {
         int strLen = fr.getStringWidth(str);
         float factor = len / (float) strLen;
         factor = Math.min(1, factor);
@@ -25,13 +25,13 @@ public class TextRenderUtils {
         drawStringScaled(str, fr, x, y, shadow, colour, factor);
     }
 
-    public static void drawStringScaled(String str, TextRenderer fr, float x, float y, boolean shadow, int colour, float factor) {
-        GlStateManager.scalef(factor, factor, 1);
-        fr.draw(str, x / factor, y / factor, colour, shadow);
-        GlStateManager.scalef(1 / factor, 1 / factor, 1);
+    public static void drawStringScaled(String str, FontRenderer fr, float x, float y, boolean shadow, int colour, float factor) {
+        GlStateManager.scale(factor, factor, 1);
+        fr.drawString(str, x / factor, y / factor, colour, shadow);
+        GlStateManager.scale(1 / factor, 1 / factor, 1);
     }
 
-    public static void drawStringCenteredScaledMaxWidth(String str, TextRenderer fr, float x, float y, boolean shadow, int len, int colour) {
+    public static void drawStringCenteredScaledMaxWidth(String str, FontRenderer fr, float x, float y, boolean shadow, int len, int colour) {
         int strLen = fr.getStringWidth(str);
         float factor = len / (float) strLen;
         factor = Math.min(1, factor);
@@ -42,12 +42,12 @@ public class TextRenderUtils {
         drawStringScaled(str, fr, x - newLen / 2, y - fontHeight / 2, shadow, colour, factor);
     }
 
-    public static void drawHoveringText(List<String> textLines, final int mouseX, final int mouseY, final int screenWidth, final int screenHeight, final int maxTextWidth, TextRenderer font) {
+    public static void drawHoveringText(List<String> textLines, final int mouseX, final int mouseY, final int screenWidth, final int screenHeight, final int maxTextWidth, FontRenderer font) {
         if (!textLines.isEmpty()) {
             GlStateManager.disableRescaleNormal();
-            DiffuseLighting.disable();
+            RenderHelper.disableStandardItemLighting();
             GlStateManager.disableLighting();
-            GlStateManager.disableDepthTest();
+            GlStateManager.disableDepth();
             int tooltipTextWidth = 0;
 
             for (String textLine : textLines) {
@@ -84,7 +84,7 @@ public class TextRenderUtils {
                 List<String> wrappedTextLines = new ArrayList<String>();
                 for (int i = 0; i < textLines.size(); i++) {
                     String textLine = textLines.get(i);
-                    List<String> wrappedLine = font.wrapLines(textLine, tooltipTextWidth);
+                    List<String> wrappedLine = font.listFormattedStringToWidth(textLine, tooltipTextWidth);
                     if (i == 0) {
                         titleLinesCount = wrappedLine.size();
                     }
@@ -113,7 +113,7 @@ public class TextRenderUtils {
             if (textLines.size() > 1) {
                 tooltipHeight += (textLines.size() - 1) * 10;
                 if (textLines.size() > titleLinesCount) {
-                    tooltipHeight += 2; // gap between title lines and next lines
+                    tooltipHeight += 2; // gap between title lines and endVertex lines
                 }
             }
 
@@ -137,7 +137,7 @@ public class TextRenderUtils {
 
             for (int lineNumber = 0; lineNumber < textLines.size(); ++lineNumber) {
                 String line = textLines.get(lineNumber);
-                font.drawWithShadow(line, (float) tooltipX, (float) tooltipY, -1);
+                font.drawStringWithShadow(line, (float) tooltipX, (float) tooltipY, -1);
 
                 if (lineNumber + 1 == titleLinesCount) {
                     tooltipY += 2;
@@ -147,8 +147,8 @@ public class TextRenderUtils {
             }
 
             GlStateManager.enableLighting();
-            GlStateManager.enableDepthTest();
-            DiffuseLighting.enableNormally();
+            GlStateManager.enableDepth();
+            RenderHelper.enableStandardItemLighting();
             GlStateManager.enableRescaleNormal();
         }
         GlStateManager.disableLighting();

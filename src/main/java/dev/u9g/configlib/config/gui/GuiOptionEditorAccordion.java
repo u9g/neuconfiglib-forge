@@ -1,13 +1,13 @@
 package dev.u9g.configlib.config.gui;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager;
 import dev.u9g.configlib.config.struct.ConfigProcessor;
 import dev.u9g.configlib.M;
 import dev.u9g.configlib.util.render.RenderUtils;
 import dev.u9g.configlib.util.render.TextRenderUtils;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
@@ -41,26 +41,26 @@ public class GuiOptionEditorAccordion extends GuiOptionEditor {
         RenderUtils.drawFloatingRectDark(x, y, width, height, true);
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder worldrenderer = tessellator.getBuffer();
+        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
         GlStateManager.enableBlend();
-        GlStateManager.disableTexture();
-        GlStateManager.blendFuncSeparate(770, 771, 1, 0);
-        GlStateManager.color4f(1, 1, 1, 1);
-        worldrenderer.begin(GL11.GL_TRIANGLES, VertexFormats.POSITION);
+        GlStateManager.disableTexture2D();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.color(1, 1, 1, 1);
+        worldrenderer.begin(GL11.GL_TRIANGLES, DefaultVertexFormats.POSITION);
         if (accordionToggled) {
-            worldrenderer.vertex((double) x + 6, (double) y + 6, 0.0D).next();
-            worldrenderer.vertex((double) x + 9.75f, (double) y + 13.5f, 0.0D).next();
-            worldrenderer.vertex((double) x + 13.5f, (double) y + 6, 0.0D).next();
+            worldrenderer.pos((double) x + 6, (double) y + 6, 0.0D).endVertex();
+            worldrenderer.pos((double) x + 9.75f, (double) y + 13.5f, 0.0D).endVertex();
+            worldrenderer.pos((double) x + 13.5f, (double) y + 6, 0.0D).endVertex();
         } else {
-            worldrenderer.vertex((double) x + 6, (double) y + 13.5f, 0.0D).next();
-            worldrenderer.vertex((double) x + 13.5f, (double) y + 9.75f, 0.0D).next();
-            worldrenderer.vertex((double) x + 6, (double) y + 6, 0.0D).next();
+            worldrenderer.pos((double) x + 6, (double) y + 13.5f, 0.0D).endVertex();
+            worldrenderer.pos((double) x + 13.5f, (double) y + 9.75f, 0.0D).endVertex();
+            worldrenderer.pos((double) x + 6, (double) y + 6, 0.0D).endVertex();
         }
         tessellator.draw();
-        GlStateManager.enableTexture();
+        GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();
 
-        TextRenderUtils.drawStringScaledMaxWidth(option.name, M.C.textRenderer, x + 18, y + 6, false, width - 10, 0xc0c0c0);
+        TextRenderUtils.drawStringScaledMaxWidth(option.name, M.C.fontRendererObj, x + 18, y + 6, false, width - 10, 0xc0c0c0);
     }
 
     @Override

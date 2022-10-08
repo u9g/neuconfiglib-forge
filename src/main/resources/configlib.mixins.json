@@ -1,13 +1,12 @@
 {
   "required": true,
-  "minVersion": "0.8",
+  "minVersion": "0.7",
   "package": "dev.u9g.configlib.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
   ],
   "client": [
     "GameRendererMixin",
-    "ExampleMixin",
     "InGameHudMixin"
   ],
   "injectors": {

@@ -1,7 +1,7 @@
 package dev.u9g.configlib.config;
 
 import com.google.gson.annotations.Expose;
-import net.minecraft.client.util.Window;
+import net.minecraft.client.gui.ScaledResolution;
 
 public class Position {
 
@@ -57,8 +57,8 @@ public class Position {
         return y;
     }
 
-    public int getAbsX(Window scaledResolution, int objWidth) {
-        int width = scaledResolution.getWidth();
+    public int getAbsX(ScaledResolution scaledResolution, int objWidth) {
+        int width = scaledResolution.getScaledWidth();
 
         if (centerX) {
             return width / 2 + x;
@@ -75,8 +75,8 @@ public class Position {
         return ret;
     }
 
-    public int getAbsY(Window scaledResolution, int objHeight) {
-        int height = scaledResolution.getHeight();
+    public int getAbsY(ScaledResolution scaledResolution, int objHeight) {
+        int height = scaledResolution.getScaledHeight();
 
         if (centerY) {
             return height / 2 + y;
@@ -93,8 +93,8 @@ public class Position {
         return ret;
     }
 
-    public int moveX(int deltaX, int objWidth, Window scaledResolution) {
-        int screenWidth = scaledResolution.getWidth();
+    public int moveX(int deltaX, int objWidth, ScaledResolution scaledResolution) {
+        int screenWidth = scaledResolution.getScaledWidth();
         boolean wasPositiveX = this.x >= 0;
         this.x += deltaX;
 
@@ -142,8 +142,8 @@ public class Position {
         return deltaX;
     }
 
-    public int moveY(int deltaY, int objHeight, Window scaledResolution) {
-        int screenHeight = scaledResolution.getHeight();
+    public int moveY(int deltaY, int objHeight, ScaledResolution scaledResolution) {
+        int screenHeight = scaledResolution.getScaledHeight();
         boolean wasPositiveY = this.y >= 0;
         this.y += deltaY;
 
@@ -191,7 +191,7 @@ public class Position {
         return deltaY;
     }
 
-    public boolean rightAligned(Window scaledResolution, int objWidth) {
+    public boolean rightAligned(ScaledResolution scaledResolution, int objWidth) {
         return (this.getAbsX(scaledResolution, objWidth) > (scaledResolution.getScaledWidth() / 2));
     }
 }

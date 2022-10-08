@@ -1,14 +1,14 @@
 package dev.u9g.configlib.config.elements;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager;
 import dev.u9g.configlib.M;
 import dev.u9g.configlib.config.ChromaColour;
-import dev.u9g.configlib.forge.DynamicTexture;
 import dev.u9g.configlib.util.render.RenderUtils;
 import dev.u9g.configlib.util.render.TextRenderUtils;
-import net.minecraft.client.util.Window;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -19,15 +19,15 @@ import java.util.function.Consumer;
 
 public class GuiElementColour extends GuiElement {
 
-    public static final Identifier colour_selector_dot = new Identifier("configlib:core/colour_selector_dot.png");
-    public static final Identifier colour_selector_bar = new Identifier("configlib:core/colour_selector_bar.png");
-    public static final Identifier colour_selector_bar_alpha = new Identifier("configlib:core/colour_selector_bar_alpha.png");
-    public static final Identifier colour_selector_chroma = new Identifier("configlib:core/colour_selector_chroma.png");
+    public static final ResourceLocation colour_selector_dot = new ResourceLocation("configlib:core/colour_selector_dot.png");
+    public static final ResourceLocation colour_selector_bar = new ResourceLocation("configlib:core/colour_selector_bar.png");
+    public static final ResourceLocation colour_selector_bar_alpha = new ResourceLocation("configlib:core/colour_selector_bar_alpha.png");
+    public static final ResourceLocation colour_selector_chroma = new ResourceLocation("configlib:core/colour_selector_chroma.png");
 
     // for more info search for DynamicTexture in this file
-    private static final Identifier colourPickerLocation = new Identifier("configlib:dynamic/colourpicker");
-    private static final Identifier colourPickerBarValueLocation = new Identifier("configlib:dynamic/colourpickervalue");
-    private static final Identifier colourPickerBarOpacityLocation = new Identifier("configlib:dynamic/colourpickeropacity");
+    private static final ResourceLocation colourPickerLocation = new ResourceLocation("configlib:dynamic/colourpicker");
+    private static final ResourceLocation colourPickerBarValueLocation = new ResourceLocation("configlib:dynamic/colourpickervalue");
+    private static final ResourceLocation colourPickerBarOpacityLocation = new ResourceLocation("configlib:dynamic/colourpickeropacity");
     private final GuiElementTextField hexField = new GuiElementTextField("", GuiElementTextField.SCALE_TEXT | GuiElementTextField.FORCE_CAPS | GuiElementTextField.NO_SPACE);
 
     private int x;
@@ -52,10 +52,10 @@ public class GuiElementColour extends GuiElement {
     }
 
     public GuiElementColour(int x, int y, String initialColour, Consumer<String> colourChangedCallback, Runnable closeCallback, boolean opacitySlider, boolean valueSlider) {
-        final Window scaledResolution = new Window(M.C);
+        final ScaledResolution scaledResolution = new ScaledResolution(M.C);
 
-        this.y = Math.max(10, Math.min(scaledResolution.getHeight() - ySize - 10, y));
-        this.x = Math.max(10, Math.min(scaledResolution.getWidth() - xSize - 10, x));
+        this.y = Math.max(10, Math.min(scaledResolution.getScaledHeight() - ySize - 10, y));
+        this.x = Math.max(10, Math.min(scaledResolution.getScaledWidth() - xSize - 10, x));
 
         this.colour = initialColour;
         this.colourChangedCallback = colourChangedCallback;
@@ -141,7 +141,7 @@ public class GuiElementColour extends GuiElement {
 
             M.C.getTextureManager().loadTexture(colourPickerBarValueLocation, new DynamicTexture(bufferedImageValue));
             M.C.getTextureManager().bindTexture(colourPickerBarValueLocation);
-            GlStateManager.color4f(1, 1, 1, 1);
+            GlStateManager.color(1, 1, 1, 1);
             RenderUtils.drawTexturedRect(x + 5 + 64 + 5, y + 5, 10, 64, GL11.GL_NEAREST);
         }
 
@@ -150,12 +150,12 @@ public class GuiElementColour extends GuiElement {
             opacityOffset = 15;
 
             M.C.getTextureManager().bindTexture(colour_selector_bar_alpha);
-            GlStateManager.color4f(1, 1, 1, 1);
+            GlStateManager.color(1, 1, 1, 1);
             RenderUtils.drawTexturedRect(x + 5 + 64 + 5 + valueOffset, y + 5, 10, 64, GL11.GL_NEAREST);
 
             M.C.getTextureManager().loadTexture(colourPickerBarOpacityLocation, new DynamicTexture(bufferedImageOpacity));
             M.C.getTextureManager().bindTexture(colourPickerBarOpacityLocation);
-            GlStateManager.color4f(1, 1, 1, 1);
+            GlStateManager.color(1, 1, 1, 1);
             RenderUtils.drawTexturedRect(x + 5 + 64 + 5 + valueOffset, y + 5, 10, 64, GL11.GL_NEAREST);
         }
 
@@ -165,13 +165,13 @@ public class GuiElementColour extends GuiElement {
         float hsvChroma[] = Color.RGBtoHSB(cChroma.getRed(), cChroma.getGreen(), cChroma.getBlue(), null);
 
         if (chromaSpeed > 0) {
-            fill(x + 5 + 64 + valueOffset + opacityOffset + 5 + 1, y + 5 + 1, x + 5 + 64 + valueOffset + opacityOffset + 5 + 10 - 1, y + 5 + 64 - 1, Color.HSBtoRGB(hsvChroma[0], 0.8f, 0.8f));
+            drawRect(x + 5 + 64 + valueOffset + opacityOffset + 5 + 1, y + 5 + 1, x + 5 + 64 + valueOffset + opacityOffset + 5 + 10 - 1, y + 5 + 64 - 1, Color.HSBtoRGB(hsvChroma[0], 0.8f, 0.8f));
         } else {
-            fill(x + 5 + 64 + valueOffset + opacityOffset + 5 + 1, y + 5 + 27 + 1, x + 5 + 64 + valueOffset + opacityOffset + 5 + 10 - 1, y + 5 + 37 - 1, Color.HSBtoRGB((hsvChroma[0] + (System.currentTimeMillis() - ChromaColour.startTime) / 1000f) % 1, 0.8f, 0.8f));
+            drawRect(x + 5 + 64 + valueOffset + opacityOffset + 5 + 1, y + 5 + 27 + 1, x + 5 + 64 + valueOffset + opacityOffset + 5 + 10 - 1, y + 5 + 37 - 1, Color.HSBtoRGB((hsvChroma[0] + (System.currentTimeMillis() - ChromaColour.startTime) / 1000f) % 1, 0.8f, 0.8f));
         }
 
         M.C.getTextureManager().bindTexture(colour_selector_bar);
-        GlStateManager.color4f(1, 1, 1, 1);
+        GlStateManager.color(1, 1, 1, 1);
         if (valueSlider) RenderUtils.drawTexturedRect(x + 5 + 64 + 5, y + 5, 10, 64, GL11.GL_NEAREST);
         if (opacitySlider) RenderUtils.drawTexturedRect(x + 5 + 64 + 5 + valueOffset, y + 5, 10, 64, GL11.GL_NEAREST);
 
@@ -182,46 +182,46 @@ public class GuiElementColour extends GuiElement {
             RenderUtils.drawTexturedRect(x + 5 + 64 + valueOffset + opacityOffset + 5, y + 5 + 27, 10, 10, GL11.GL_NEAREST);
         }
 
-        if (valueSlider) fill(x + 5 + 64 + 5, y + 5 + 64 - (int) (64 * hsv[2]), x + 5 + 64 + valueOffset, y + 5 + 64 - (int) (64 * hsv[2]) + 1, 0xFF000000);
-        if (opacitySlider) fill(x + 5 + 64 + 5 + valueOffset, y + 5 + 64 - c.getAlpha() / 4, x + 5 + 64 + valueOffset + opacityOffset, y + 5 + 64 - c.getAlpha() / 4 - 1, 0xFF000000);
+        if (valueSlider) drawRect(x + 5 + 64 + 5, y + 5 + 64 - (int) (64 * hsv[2]), x + 5 + 64 + valueOffset, y + 5 + 64 - (int) (64 * hsv[2]) + 1, 0xFF000000);
+        if (opacitySlider) drawRect(x + 5 + 64 + 5 + valueOffset, y + 5 + 64 - c.getAlpha() / 4, x + 5 + 64 + valueOffset + opacityOffset, y + 5 + 64 - c.getAlpha() / 4 - 1, 0xFF000000);
         if (chromaSpeed > 0) {
-            fill(x + 5 + 64 + valueOffset + opacityOffset + 5, y + 5 + 64 - (int) (chromaSpeed / 255f * 64), x + 5 + 64 + valueOffset + opacityOffset + 5 + 10, y + 5 + 64 - (int) (chromaSpeed / 255f * 64) + 1, 0xFF000000);
+            drawRect(x + 5 + 64 + valueOffset + opacityOffset + 5, y + 5 + 64 - (int) (chromaSpeed / 255f * 64), x + 5 + 64 + valueOffset + opacityOffset + 5 + 10, y + 5 + 64 - (int) (chromaSpeed / 255f * 64) + 1, 0xFF000000);
         }
 
         M.C.getTextureManager().loadTexture(colourPickerLocation, new DynamicTexture(bufferedImage));
         M.C.getTextureManager().bindTexture(colourPickerLocation);
-        GlStateManager.color4f(1, 1, 1, 1);
+        GlStateManager.color(1, 1, 1, 1);
         RenderUtils.drawTexturedRect(x + 1, y + 1, 72, 72, GL11.GL_LINEAR);
 
         M.C.getTextureManager().bindTexture(colour_selector_dot);
-        GlStateManager.color4f(1, 1, 1, 1);
+        GlStateManager.color(1, 1, 1, 1);
         RenderUtils.drawTexturedRect(x + 5 + 32 + selx - 4, y + 5 + 32 + sely - 4, 8, 8, GL11.GL_NEAREST);
 
-        TextRenderUtils.drawStringCenteredScaledMaxWidth(Formatting.GRAY.toString() + Math.round(hsv[2] * 100) + "", M.C.textRenderer, x + 5 + 64 + 5 + 5 - (Math.round(hsv[2] * 100) == 100 ? 1 : 0), y + 5 + 64 + 5 + 5, true, 13, -1);
+        TextRenderUtils.drawStringCenteredScaledMaxWidth(EnumChatFormatting.GRAY.toString() + Math.round(hsv[2] * 100) + "", M.C.fontRendererObj, x + 5 + 64 + 5 + 5 - (Math.round(hsv[2] * 100) == 100 ? 1 : 0), y + 5 + 64 + 5 + 5, true, 13, -1);
         if (opacitySlider) {
-            TextRenderUtils.drawStringCenteredScaledMaxWidth(Formatting.GRAY.toString() + Math.round(c.getAlpha() / 255f * 100) + "", M.C.textRenderer, x + 5 + 64 + 5 + valueOffset + 5, y + 5 + 64 + 5 + 5, true, 13, -1);
+            TextRenderUtils.drawStringCenteredScaledMaxWidth(EnumChatFormatting.GRAY.toString() + Math.round(c.getAlpha() / 255f * 100) + "", M.C.fontRendererObj, x + 5 + 64 + 5 + valueOffset + 5, y + 5 + 64 + 5 + 5, true, 13, -1);
         }
         if (chromaSpeed > 0) {
-            TextRenderUtils.drawStringCenteredScaledMaxWidth(Formatting.GRAY.toString() + (int) ChromaColour.getSecondsForSpeed(chromaSpeed) + "s", M.C.textRenderer, x + 5 + 64 + 5 + valueOffset + opacityOffset + 6, y + 5 + 64 + 5 + 5, true, 13, -1);
+            TextRenderUtils.drawStringCenteredScaledMaxWidth(EnumChatFormatting.GRAY.toString() + (int) ChromaColour.getSecondsForSpeed(chromaSpeed) + "s", M.C.fontRendererObj, x + 5 + 64 + 5 + valueOffset + opacityOffset + 6, y + 5 + 64 + 5 + 5, true, 13, -1);
         }
 
         hexField.setSize(48, 10);
         if (!hexField.getFocus()) hexField.setText(Integer.toHexString(c.getRGB() & 0xFFFFFF).toUpperCase());
 
-        StringBuilder sb = new StringBuilder(Formatting.GRAY + "#");
+        StringBuilder sb = new StringBuilder(EnumChatFormatting.GRAY + "#");
         for (int i = 0; i < 6 - hexField.getText().length(); i++) {
             sb.append("0");
         }
-        sb.append(Formatting.WHITE);
+        sb.append(EnumChatFormatting.WHITE);
 
         hexField.setPrependText(sb.toString());
         hexField.render(x + 5 + 8, y + 5 + 64 + 5);
     }
 
     public boolean mouseInput(int mouseX, int mouseY) {
-        Window scaledResolution = new Window(M.C);
-        float mouseXF = (float) (Mouse.getX() * scaledResolution.getScaledWidth() / M.C.width);
-        float mouseYF = (float) (scaledResolution.getScaledHeight() - Mouse.getY() * scaledResolution.getHeight() / M.C.height - 1);
+        ScaledResolution scaledResolution = new ScaledResolution(M.C);
+        float mouseXF = (float) (Mouse.getX() * scaledResolution.getScaledWidth() / M.C.displayWidth);
+        float mouseYF = (float) (scaledResolution.getScaledHeight() - Mouse.getY() * scaledResolution.getScaledHeight() / M.C.displayHeight - 1);
 
         if ((Mouse.getEventButton() == 0 || Mouse.getEventButton() == 1) && Mouse.getEventButtonState()) {
             if (mouseX > x + 5 + 8 && mouseX < x + 5 + 8 + 48) {

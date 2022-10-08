@@ -1,11 +1,11 @@
 package dev.u9g.configlib.config.elements;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import dev.u9g.configlib.M;
 import dev.u9g.configlib.config.GuiTextures;
 import dev.u9g.configlib.util.lerp.LerpUtils;
 import dev.u9g.configlib.util.render.RenderUtils;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.ResourceLocation;
 import org.lwjgl.input.Mouse;
 
 import java.util.function.Consumer;
@@ -43,11 +43,11 @@ public class GuiElementBoolean extends GuiElement {
 
     @Override
     public void render() {
-        GlStateManager.color4f(1, 1, 1, 1);
+        GlStateManager.color(1, 1, 1, 1);
         M.C.getTextureManager().bindTexture(GuiTextures.BAR);
         RenderUtils.drawTexturedRect(x, y, xSize, ySize);
 
-        Identifier buttonLoc = GuiTextures.ON;
+        ResourceLocation buttonLoc = GuiTextures.ON;
         long currentMillis = System.currentTimeMillis();
         long deltaMillis = currentMillis - lastMillis;
         lastMillis = currentMillis;

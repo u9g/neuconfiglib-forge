@@ -1,6 +1,6 @@
 package dev.u9g.configlib.config.gui;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager;
 import dev.u9g.configlib.M;
 import dev.u9g.configlib.config.ChromaColour;
 import dev.u9g.configlib.config.elements.GuiElementColour;
@@ -29,7 +29,7 @@ public class GuiOptionEditorColour extends GuiOptionEditor {
         int r = (argb >> 16) & 0xFF;
         int g = (argb >> 8) & 0xFF;
         int b = argb & 0xFF;
-        GlStateManager.color4f(r / 255f, g / 255f, b / 255f, 1);
+        GlStateManager.color(r / 255f, g / 255f, b / 255f, 1);
         M.C.getTextureManager().bindTexture(button_white);
         RenderUtils.drawTexturedRect(x + width / 6 - 24, y + height - 7 - 14, 48, 16);
     }

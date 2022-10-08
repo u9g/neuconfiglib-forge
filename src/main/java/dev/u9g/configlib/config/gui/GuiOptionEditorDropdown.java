@@ -4,8 +4,8 @@ import dev.u9g.configlib.M;
 import dev.u9g.configlib.config.struct.ConfigProcessor;
 import dev.u9g.configlib.util.render.RenderUtils;
 import dev.u9g.configlib.util.render.TextRenderUtils;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
 import org.lwjgl.input.Mouse;
 
 public class GuiOptionEditorDropdown extends GuiOptionEditor {
@@ -30,7 +30,7 @@ public class GuiOptionEditorDropdown extends GuiOptionEditor {
         if (!open) {
             int height = getHeight();
 
-            TextRenderer fr = M.C.textRenderer;
+            FontRenderer fr = M.C.fontRendererObj;
             int dropdownWidth = Math.min(width / 3 - 10, 80);
             int left = x + width / 6 - dropdownWidth / 2;
             int top = y + height - 7 - 14;
@@ -57,7 +57,7 @@ public class GuiOptionEditorDropdown extends GuiOptionEditor {
 
             int height = getHeight();
 
-            TextRenderer fr = M.C.textRenderer;
+            FontRenderer fr = M.C.fontRendererObj;
             int dropdownWidth = Math.min(width / 3 - 10, 80);
             int left = x + width / 6 - dropdownWidth / 2;
             int top = y + height - 7 - 14;
@@ -66,13 +66,13 @@ public class GuiOptionEditorDropdown extends GuiOptionEditor {
 
             int main = 0xff202026;
             int blue = 0xff2355ad;
-            DrawableHelper.fill(left, top, left + 1, top + dropdownHeight, blue); //Left
-            DrawableHelper.fill(left + 1, top, left + dropdownWidth, top + 1, blue); //Top
-            DrawableHelper.fill(left + dropdownWidth - 1, top + 1, left + dropdownWidth, top + dropdownHeight, blue); //Right
-            DrawableHelper.fill(left + 1, top + dropdownHeight - 1, left + dropdownWidth - 1, top + dropdownHeight, blue); //Bottom
-            DrawableHelper.fill(left + 1, top + 1, left + dropdownWidth - 1, top + dropdownHeight - 1, main); //Middle
+            Gui.drawRect(left, top, left + 1, top + dropdownHeight, blue); //Left
+            Gui.drawRect(left + 1, top, left + dropdownWidth, top + 1, blue); //Top
+            Gui.drawRect(left + dropdownWidth - 1, top + 1, left + dropdownWidth, top + dropdownHeight, blue); //Right
+            Gui.drawRect(left + 1, top + dropdownHeight - 1, left + dropdownWidth - 1, top + dropdownHeight, blue); //Bottom
+            Gui.drawRect(left + 1, top + 1, left + dropdownWidth - 1, top + dropdownHeight - 1, main); //Middle
 
-            DrawableHelper.fill(left + 1, top + 14 - 1, left + dropdownWidth - 1, top + 14, blue); //Bar
+            Gui.drawRect(left + 1, top + 14 - 1, left + dropdownWidth - 1, top + 14, blue); //Bar
 
             int dropdownY = 13;
             for (String option : values) {

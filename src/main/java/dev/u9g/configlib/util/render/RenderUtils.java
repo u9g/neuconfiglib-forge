@@ -1,13 +1,13 @@
 package dev.u9g.configlib.util.render;
 
-import com.mojang.blaze3d.platform.GLX;
-import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.renderer.GlStateManager;
 import dev.u9g.configlib.M;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.util.Window;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
 
@@ -20,9 +20,9 @@ public class RenderUtils {
     public static void drawFloatingRectDark(int x, int y, int width, int height, boolean shadow) {
         int alpha = 0xf0000000;
 
-        if (GLX.supportsFbo()) {
-            Window scaledResolution = new Window(M.C);
-            BackgroundBlur.renderBlurredBackground(15, scaledResolution.getWidth(), scaledResolution.getHeight(), x, y, width, height, true);
+        if (OpenGlHelper.isFramebufferEnabled()) {
+            ScaledResolution scaledResolution = new ScaledResolution(M.C);
+            BackgroundBlur.renderBlurredBackground(15, scaledResolution.getScaledWidth(), scaledResolution.getScaledHeight(), x, y, width, height, true);
         } else {
             alpha = 0xff000000;
         }
@@ -30,14 +30,14 @@ public class RenderUtils {
         int main = alpha | 0x202026;
         int light = 0xff303036;
         int dark = 0xff101016;
-        DrawableHelper.fill(x, y, x + 1, y + height, light); //Left
-        DrawableHelper.fill(x + 1, y, x + width, y + 1, light); //Top
-        DrawableHelper.fill(x + width - 1, y + 1, x + width, y + height, dark); //Right
-        DrawableHelper.fill(x + 1, y + height - 1, x + width - 1, y + height, dark); //Bottom
-        DrawableHelper.fill(x + 1, y + 1, x + width - 1, y + height - 1, main); //Middle
+        Gui.drawRect(x, y, x + 1, y + height, light); //Left
+        Gui.drawRect(x + 1, y, x + width, y + 1, light); //Top
+        Gui.drawRect(x + width - 1, y + 1, x + width, y + height, dark); //Right
+        Gui.drawRect(x + 1, y + height - 1, x + width - 1, y + height, dark); //Bottom
+        Gui.drawRect(x + 1, y + 1, x + width - 1, y + height - 1, main); //Middle
         if (shadow) {
-            DrawableHelper.fill(x + width, y + 2, x + width + 2, y + height + 2, 0x70000000); //Right shadow
-            DrawableHelper.fill(x + 2, y + height, x + width, y + height + 2, 0x70000000); //Bottom shadow
+            Gui.drawRect(x + width, y + 2, x + width + 2, y + height + 2, 0x70000000); //Right shadow
+            Gui.drawRect(x + 2, y + height, x + width, y + height + 2, 0x70000000); //Bottom shadow
         }
     }
 
@@ -49,14 +49,14 @@ public class RenderUtils {
         int main = (alpha << 24) | 0xc0c0c0;
         int light = (alpha << 24) | 0xf0f0f0;
         int dark = (alpha << 24) | 0x909090;
-        DrawableHelper.fill(x, y, x + 1, y + height, light); //Left
-        DrawableHelper.fill(x + 1, y, x + width, y + 1, light); //Top
-        DrawableHelper.fill(x + width - 1, y + 1, x + width, y + height, dark); //Right
-        DrawableHelper.fill(x + 1, y + height - 1, x + width - 1, y + height, dark); //Bottom
-        DrawableHelper.fill(x + 1, y + 1, x + width - 1, y + height - 1, main); //Middle
+        Gui.drawRect(x, y, x + 1, y + height, light); //Left
+        Gui.drawRect(x + 1, y, x + width, y + 1, light); //Top
+        Gui.drawRect(x + width - 1, y + 1, x + width, y + height, dark); //Right
+        Gui.drawRect(x + 1, y + height - 1, x + width - 1, y + height, dark); //Bottom
+        Gui.drawRect(x + 1, y + 1, x + width - 1, y + height - 1, main); //Middle
         if (shadow) {
-            DrawableHelper.fill(x + width, y + 2, x + width + 2, y + height + 2, (alpha * 3 / 5) << 24); //Right shadow
-            DrawableHelper.fill(x + 2, y + height, x + width, y + height + 2, (alpha * 3 / 5) << 24); //Bottom shadow
+            Gui.drawRect(x + width, y + 2, x + width + 2, y + height + 2, (alpha * 3 / 5) << 24); //Right shadow
+            Gui.drawRect(x + 2, y + height, x + width, y + height + 2, (alpha * 3 / 5) << 24); //Bottom shadow
         }
     }
 
@@ -64,12 +64,12 @@ public class RenderUtils {
         double f = 0.00390625;
         double f1 = 0.00390625;
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder worldrenderer = tessellator.getBuffer();
-        worldrenderer.begin(7, VertexFormats.POSITION_TEXTURE);
-        worldrenderer.vertex(x + 0.0, y + height, 0.0)  .texture((textureX + 0.0) * f, (textureY + height) * f1).next();
-        worldrenderer.vertex(x + width, y + height, 0.0).texture((textureX + width) * f, (textureY + height) * f1).next();
-        worldrenderer.vertex(x + width, y + 0.0, 0.0)   .texture((textureX + width) * f, (textureY + 0.0) * f1).next();
-        worldrenderer.vertex(x + 0.0, y + 0.0, 0.0)     .texture((textureX + 0.0) * f, (textureY + 0.0) * f1).next();
+        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        worldrenderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        worldrenderer.pos(x + 0.0, y + height, 0.0)  .tex((textureX + 0.0) * f, (textureY + height) * f1).endVertex();
+        worldrenderer.pos(x + width, y + height, 0.0).tex((textureX + width) * f, (textureY + height) * f1).endVertex();
+        worldrenderer.pos(x + width, y + 0.0, 0.0)   .tex((textureX + width) * f, (textureY + 0.0) * f1).endVertex();
+        worldrenderer.pos(x + 0.0, y + 0.0, 0.0)     .tex((textureX + 0.0) * f, (textureY + 0.0) * f1).endVertex();
         tessellator.draw();
     }
 
@@ -95,18 +95,18 @@ public class RenderUtils {
     }
 
     public static void drawTexturedRectNoBlend(float x, float y, float width, float height, float uMin, float uMax, float vMin, float vMax, int filter) {
-        GlStateManager.enableTexture();
+        GlStateManager.enableTexture2D();
 
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, filter);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, filter);
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder worldrenderer = tessellator.getBuffer();
-        worldrenderer.begin(7, VertexFormats.POSITION_TEXTURE);
-        worldrenderer.vertex(x, y + height, 0.0D)            .texture(uMin, vMax).next();
-        worldrenderer.vertex(x + width, y + height, 0.0D)  .texture(uMax, vMax).next();
-        worldrenderer.vertex(x + width, y, 0.0D)             .texture(uMax, vMin).next();
-        worldrenderer.vertex(x, y, 0.0D)                       .texture(uMin, vMin).next();
+        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        worldrenderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        worldrenderer.pos(x, y + height, 0.0D)            .tex(uMin, vMax).endVertex();
+        worldrenderer.pos(x + width, y + height, 0.0D)  .tex(uMax, vMax).endVertex();
+        worldrenderer.pos(x + width, y, 0.0D)             .tex(uMax, vMin).endVertex();
+        worldrenderer.pos(x, y, 0.0D)                       .tex(uMin, vMin).endVertex();
         tessellator.draw();
 
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
@@ -123,32 +123,32 @@ public class RenderUtils {
         float endGreen = (float) (endColor >> 8 & 255) / 255.0F;
         float endBlue = (float) (endColor & 255) / 255.0F;
 
-        GlStateManager.disableTexture();
+        GlStateManager.disableTexture2D();
         GlStateManager.enableBlend();
-        GlStateManager.disableAlphaTest();
-        GlStateManager.blendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.disableAlpha();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.shadeModel(7425);
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder worldrenderer = tessellator.getBuffer();
-        worldrenderer.begin(7, VertexFormats.POSITION_COLOR);
-        worldrenderer.vertex(right, top, zLevel).color(startRed, startGreen, startBlue, startAlpha).next();
-        worldrenderer.vertex(left, top, zLevel).color(startRed, startGreen, startBlue, startAlpha).next();
-        worldrenderer.vertex(left, bottom, zLevel).color(endRed, endGreen, endBlue, endAlpha).next();
-        worldrenderer.vertex(right, bottom, zLevel).color(endRed, endGreen, endBlue, endAlpha).next();
+        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        worldrenderer.begin(7, DefaultVertexFormats.POSITION_COLOR);
+        worldrenderer.pos(right, top, zLevel).color(startRed, startGreen, startBlue, startAlpha).endVertex();
+        worldrenderer.pos(left, top, zLevel).color(startRed, startGreen, startBlue, startAlpha).endVertex();
+        worldrenderer.pos(left, bottom, zLevel).color(endRed, endGreen, endBlue, endAlpha).endVertex();
+        worldrenderer.pos(right, bottom, zLevel).color(endRed, endGreen, endBlue, endAlpha).endVertex();
         tessellator.draw();
 
         GlStateManager.shadeModel(7424);
         GlStateManager.disableBlend();
-        GlStateManager.enableAlphaTest();
-        GlStateManager.enableTexture();
+        GlStateManager.enableAlpha();
+        GlStateManager.enableTexture2D();
     }
 
     public static void drawInnerBox(int left, int top, int width, int height) {
-        DrawableHelper.fill(left, top, left + width, top + height, 0x6008080E); //Middle
-        DrawableHelper.fill(left, top, left + 1, top + height, 0xff08080E); //Left
-        DrawableHelper.fill(left, top, left + width, top + 1, 0xff08080E); //Top
-        DrawableHelper.fill(left + width - 1, top, left + width, top + height, 0xff28282E); //Right
-        DrawableHelper.fill(left, top + height - 1, left + width, top + height, 0xff28282E); //Bottom
+        Gui.drawRect(left, top, left + width, top + height, 0x6008080E); //Middle
+        Gui.drawRect(left, top, left + 1, top + height, 0xff08080E); //Left
+        Gui.drawRect(left, top, left + width, top + 1, 0xff08080E); //Top
+        Gui.drawRect(left + width - 1, top, left + width, top + height, 0xff28282E); //Right
+        Gui.drawRect(left, top + height - 1, left + width, top + height, 0xff28282E); //Bottom
     }
 }

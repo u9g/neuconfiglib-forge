@@ -1,6 +1,6 @@
 package dev.u9g.configlib.config.gui;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager;
 import dev.u9g.configlib.M;
 import dev.u9g.configlib.config.GuiTextures;
 import dev.u9g.configlib.config.struct.ConfigProcessor;
@@ -30,12 +30,12 @@ public class GuiOptionEditorButton extends GuiOptionEditor {
 
         int height = getHeight();
 
-        GlStateManager.color4f(1, 1, 1, 1);
+        GlStateManager.color(1, 1, 1, 1);
         M.C.getTextureManager().bindTexture(GuiTextures.button_tex);
         RenderUtils.drawTexturedRect(x + width / 6 - 24, y + height - 7 - 14, 48, 16);
 
         if (buttonText != null) {
-            TextRenderUtils.drawStringCenteredScaledMaxWidth(buttonText, M.C.textRenderer, x + width / 6, y + height - 7 - 6, false, 44, 0xFF303030);
+            TextRenderUtils.drawStringCenteredScaledMaxWidth(buttonText, M.C.fontRendererObj, x + width / 6, y + height - 7 - 6, false, 44, 0xFF303030);
         }
     }
 

@@ -1,7 +1,6 @@
 package dev.u9g.configlib.config;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.platform.GlStateManager;
 import dev.u9g.configlib.M;
 import dev.u9g.configlib.config.gui.GuiOptionEditor;
 import dev.u9g.configlib.config.gui.GuiOptionEditorAccordion;
@@ -14,10 +13,11 @@ import dev.u9g.configlib.util.render.RenderUtils;
 import dev.u9g.configlib.config.elements.GuiElement;
 import dev.u9g.configlib.config.elements.GuiElementTextField;
 import dev.u9g.configlib.util.render.TextRenderUtils;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawableHelper;
-import net.minecraft.client.util.Window;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.EnumChatFormatting;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
@@ -192,18 +192,18 @@ public class MyModConfigEditor extends GuiElement {
     public void render() {
         optionsScroll.tick();
         categoryScroll.tick();
-        handleKeyboardPresses();
+        handleKeyboardInputPresses();
 
         List<String> tooltipToDisplay = null;
 
         long currentTime = System.currentTimeMillis();
         long delta = currentTime - openedMillis;
 
-        Window scaledResolution = new Window(M.C);
-        int width = scaledResolution.getWidth();
-        int height = scaledResolution.getHeight();
-        int mouseX = Mouse.getX() * width / M.C.width;
-        int mouseY = height - Mouse.getY() * height / M.C.height - 1;
+        ScaledResolution scaledResolution = new ScaledResolution(M.C);
+        int width = scaledResolution.getScaledWidth();
+        int height = scaledResolution.getScaledHeight();
+        int mouseX = Mouse.getX() * width / M.C.displayWidth;
+        int mouseY = height - Mouse.getY() * height / M.C.displayHeight - 1;
 
         float opacityFactor = LerpUtils.sigmoidZeroOne(delta / 500f);
         RenderUtils.drawGradientRect(0, 0, 0, width, height,
@@ -211,11 +211,11 @@ public class MyModConfigEditor extends GuiElement {
                 (int) (0x90 * opacityFactor) << 24 | 0x101010
         );
 
-        int xSize = Math.min(scaledResolution.getWidth() - 100 / scaledResolution.getScaleFactor(), 500);
-        int ySize = Math.min(scaledResolution.getHeight() - 100 / scaledResolution.getScaleFactor(), 400);
+        int xSize = Math.min(scaledResolution.getScaledWidth() - 100 / scaledResolution.getScaleFactor(), 500);
+        int ySize = Math.min(scaledResolution.getScaledHeight() - 100 / scaledResolution.getScaleFactor(), 400);
 
-        int x = (scaledResolution.getWidth() - xSize) / 2;
-        int y = (scaledResolution.getHeight() - ySize) / 2;
+        int x = (scaledResolution.getScaledWidth() - xSize) / 2;
+        int y = (scaledResolution.getScaledHeight() - ySize) / 2;
 
         int adjScaleFactor = Math.max(2, scaledResolution.getScaleFactor());
 
@@ -228,20 +228,20 @@ public class MyModConfigEditor extends GuiElement {
             openingYSize = 5 + (int) (delta - 150) * (ySize - 5) / 150;
         }
         RenderUtils.drawFloatingRectDark(
-                (scaledResolution.getWidth() - openingXSize) / 2,
-                (scaledResolution.getHeight() - openingYSize) / 2,
+                (scaledResolution.getScaledWidth() - openingXSize) / 2,
+                (scaledResolution.getScaledHeight() - openingYSize) / 2,
                 openingXSize, openingYSize
         );
         GlScissorStack.clear();
-        GlScissorStack.push((scaledResolution.getWidth() - openingXSize) / 2,
-                (scaledResolution.getHeight() - openingYSize) / 2,
-                (scaledResolution.getWidth() + openingXSize) / 2,
-                (scaledResolution.getHeight() + openingYSize) / 2, scaledResolution
+        GlScissorStack.push((scaledResolution.getScaledWidth() - openingXSize) / 2,
+                (scaledResolution.getScaledHeight() - openingYSize) / 2,
+                (scaledResolution.getScaledWidth() + openingXSize) / 2,
+                (scaledResolution.getScaledHeight() + openingYSize) / 2, scaledResolution
         );
 
         RenderUtils.drawFloatingRectDark(x + 5, y + 5, xSize - 10, 20, false);
 
-        TextRenderer fr = M.C.textRenderer;
+        FontRenderer fr = M.C.fontRendererObj;
         TextRenderUtils.drawStringCenteredScaledMaxWidth(
                 headerText,
                 fr,
@@ -261,13 +261,13 @@ public class MyModConfigEditor extends GuiElement {
         int innerRight = x + 144 - innerPadding;
         int innerTop = y + 49 + innerPadding;
         int innerBottom = y + ySize - 5 - innerPadding;
-        DrawableHelper.fill(innerLeft, innerTop, innerLeft + 1, innerBottom, 0xff08080E); //Left
-        DrawableHelper.fill(innerLeft + 1, innerTop, innerRight, innerTop + 1, 0xff08080E); //Top
-        DrawableHelper.fill(innerRight - 1, innerTop + 1, innerRight, innerBottom, 0xff28282E); //Right
-        DrawableHelper.fill(innerLeft + 1, innerBottom - 1, innerRight - 1, innerBottom, 0xff28282E); //Bottom
-        DrawableHelper.fill(innerLeft + 1, innerTop + 1, innerRight - 1, innerBottom - 1, 0x6008080E); //Middle
+        Gui.drawRect(innerLeft, innerTop, innerLeft + 1, innerBottom, 0xff08080E); //Left
+        Gui.drawRect(innerLeft + 1, innerTop, innerRight, innerTop + 1, 0xff08080E); //Top
+        Gui.drawRect(innerRight - 1, innerTop + 1, innerRight, innerBottom, 0xff28282E); //Right
+        Gui.drawRect(innerLeft + 1, innerBottom - 1, innerRight - 1, innerBottom, 0xff28282E); //Bottom
+        Gui.drawRect(innerLeft + 1, innerTop + 1, innerRight - 1, innerBottom - 1, 0x6008080E); //Middle
 
-        GlScissorStack.push(0, innerTop + 1, scaledResolution.getWidth(),
+        GlScissorStack.push(0, innerTop + 1, scaledResolution.getScaledWidth(),
                 innerBottom - 1, scaledResolution
         );
 
@@ -282,9 +282,9 @@ public class MyModConfigEditor extends GuiElement {
             }
             String catName = entry.getValue().name;
             if (entry.getKey().equals(getSelectedCategory())) {
-                catName = Formatting.DARK_AQUA.toString() + Formatting.UNDERLINE + catName;
+                catName = EnumChatFormatting.DARK_AQUA.toString() + EnumChatFormatting.UNDERLINE + catName;
             } else {
-                catName = Formatting.GRAY + catName;
+                catName = EnumChatFormatting.GRAY + catName;
             }
             TextRenderUtils.drawStringCenteredScaledMaxWidth(catName,
                     fr, x + 75, y + 70 + catY, false, 100, -1
@@ -311,8 +311,8 @@ public class MyModConfigEditor extends GuiElement {
             }
         }
         int catDist = innerBottom - innerTop - 12;
-        DrawableHelper.fill(innerLeft + 2, innerTop + 5, innerLeft + 7, innerBottom - 5, 0xff101010);
-        DrawableHelper.fill(innerLeft + 3, innerTop + 6 + (int) (catDist * catBarStart), innerLeft + 6,
+        Gui.drawRect(innerLeft + 2, innerTop + 5, innerLeft + 7, innerBottom - 5, 0xff101010);
+        Gui.drawRect(innerLeft + 3, innerTop + 6 + (int) (catDist * catBarStart), innerLeft + 6,
                 innerTop + 6 + (int) (catDist * catBarEnd), 0xff303030
         );
 
@@ -329,7 +329,7 @@ public class MyModConfigEditor extends GuiElement {
         innerBottom = y + ySize - 5 - innerPadding;
 
         M.C.getTextureManager().bindTexture(GuiTextures.SEARCH_ICON);
-        GlStateManager.color4f(1, 1, 1, 1);
+        GlStateManager.color(1, 1, 1, 1);
         Utils.drawTexturedRect(innerRight - 20, innerTop - (20 + innerPadding) / 2 - 9, 18, 18, GL11.GL_NEAREST);
 
         minimumSearchSize.tick();
@@ -344,7 +344,7 @@ public class MyModConfigEditor extends GuiElement {
 
         int rightStuffLen = 20;
         if (minimumSearchSize.getValue() > 1) {
-            int strLen = M.C.textRenderer.getStringWidth(searchField.getText()) + 10;
+            int strLen = M.C.fontRendererObj.getStringWidth(searchField.getText()) + 10;
             if (!shouldShow) strLen = 0;
 
             int len = Math.max(strLen, minimumSearchSize.getValue());
@@ -362,11 +362,11 @@ public class MyModConfigEditor extends GuiElement {
             );
         }
 
-        DrawableHelper.fill(innerLeft, innerTop, innerLeft + 1, innerBottom, 0xff08080E); //Left
-        DrawableHelper.fill(innerLeft + 1, innerTop, innerRight, innerTop + 1, 0xff08080E); //Top
-        DrawableHelper.fill(innerRight - 1, innerTop + 1, innerRight, innerBottom, 0xff303036); //Right
-        DrawableHelper.fill(innerLeft + 1, innerBottom - 1, innerRight - 1, innerBottom, 0xff303036); //Bottom
-        DrawableHelper.fill(innerLeft + 1, innerTop + 1, innerRight - 1, innerBottom - 1, 0x6008080E); //Middle
+        Gui.drawRect(innerLeft, innerTop, innerLeft + 1, innerBottom, 0xff08080E); //Left
+        Gui.drawRect(innerLeft + 1, innerTop, innerRight, innerTop + 1, 0xff08080E); //Top
+        Gui.drawRect(innerRight - 1, innerTop + 1, innerRight, innerBottom, 0xff303036); //Right
+        Gui.drawRect(innerLeft + 1, innerBottom - 1, innerRight - 1, innerBottom, 0xff303036); //Bottom
+        Gui.drawRect(innerLeft + 1, innerTop + 1, innerRight - 1, innerBottom - 1, 0x6008080E); //Middle
 
         GlScissorStack.push(innerLeft + 1, innerTop + 1, innerRight - 1, innerBottom - 1, scaledResolution);
         float barSize = 1;
@@ -374,7 +374,7 @@ public class MyModConfigEditor extends GuiElement {
         if (getSelectedCategory() != null && currentConfigEditing.containsKey(getSelectedCategory())) {
             ConfigProcessor.ProcessedCategory cat = currentConfigEditing.get(getSelectedCategory());
             int optionWidthDefault = innerRight - innerLeft - 20;
-            GlStateManager.enableDepthTest();
+            GlStateManager.enableDepth();
             HashMap<Integer, Integer> activeAccordions = new HashMap<>();
             for (ConfigProcessor.ProcessedOption option : getOptionsInCategory(cat).values()) {
                 int optionWidth = optionWidthDefault;
@@ -406,7 +406,7 @@ public class MyModConfigEditor extends GuiElement {
                 }
                 optionY += optionHeight + 5;
             }
-            GlStateManager.disableDepthTest();
+            GlStateManager.disableDepth();
             if (optionY > 0) {
                 barSize =
                         LerpUtils.clampZeroOne((float) (innerBottom - innerTop - 2) / (optionY + 5 + optionsScroll.getValue()));
@@ -421,8 +421,8 @@ public class MyModConfigEditor extends GuiElement {
             ConfigProcessor.ProcessedCategory cat = currentConfigEditing.get(getSelectedCategory());
             int optionWidthDefault = innerRight - innerLeft - 20;
 
-            GlStateManager.translated(0, 0, 10);
-            GlStateManager.enableDepthTest();
+            GlStateManager.translate(0, 0, 10);
+            GlStateManager.enableDepth();
             HashMap<Integer, Integer> activeAccordions = new HashMap<>();
             for (ConfigProcessor.ProcessedOption option : getOptionsInCategory(cat).values()) {
                 int optionWidth = optionWidthDefault;
@@ -459,8 +459,8 @@ public class MyModConfigEditor extends GuiElement {
                 }
                 optionYOverlay += optionHeight + 5;
             }
-            GlStateManager.disableDepthTest();
-            GlStateManager.translated(0, 0, -10);
+            GlStateManager.disableDepth();
+            GlStateManager.translate(0, 0, -10);
         }
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
 
@@ -479,8 +479,8 @@ public class MyModConfigEditor extends GuiElement {
             }
         }
         int dist = innerBottom - innerTop - 12;
-        DrawableHelper.fill(innerRight - 10, innerTop + 5, innerRight - 5, innerBottom - 5, 0xff101010);
-        DrawableHelper.fill(
+        Gui.drawRect(innerRight - 10, innerTop + 5, innerRight - 5, innerBottom - 5, 0xff101010);
+        Gui.drawRect(
                 innerRight - 9,
                 innerTop + 6 + (int) (dist * optionsBarStart),
                 innerRight - 6,
@@ -490,14 +490,14 @@ public class MyModConfigEditor extends GuiElement {
 
         for (int badgeId = 0; badgeId < badges.length; badgeId++) {
             M.C.getTextureManager().bindTexture(badges[badgeId].icon);
-            GlStateManager.color4f(1, 1, 1, 1);
+            GlStateManager.color(1, 1, 1, 1);
             int socialLeft = x + xSize - 23 - 18 * badgeId;
             RenderUtils.drawTexturedRect(socialLeft, y + 7, 16, 16, GL11.GL_LINEAR);
 
             if (mouseX >= socialLeft && mouseX <= socialLeft + 16 &&
                     mouseY >= y + 6 && mouseY <= y + 23) {
                 tooltipToDisplay = Lists.newArrayList(
-                        Formatting.YELLOW + "Go to: " + Formatting.RESET + badges[badgeId].url);
+                        EnumChatFormatting.YELLOW + "Go to: " + EnumChatFormatting.RESET + badges[badgeId].url);
             }
         }
 
@@ -507,20 +507,20 @@ public class MyModConfigEditor extends GuiElement {
             TextRenderUtils.drawHoveringText(tooltipToDisplay, mouseX, mouseY, width, height, -1, fr);
         }
 
-        GlStateManager.translated(0, 0, -2);
+        GlStateManager.translate(0, 0, -2);
     }
 
     public boolean mouseInput(int mouseX, int mouseY) {
         lastMouseX = mouseX;
-        Window scaledResolution = new Window(M.C);
-        int width = scaledResolution.getWidth();
-        int height = scaledResolution.getHeight();
+        ScaledResolution scaledResolution = new ScaledResolution(M.C);
+        int width = scaledResolution.getScaledWidth();
+        int height = scaledResolution.getScaledHeight();
 
         int xSize = Math.min(width - 100 / scaledResolution.getScaleFactor(), 500);
         int ySize = Math.min(height - 100 / scaledResolution.getScaleFactor(), 400);
 
-        int x = (scaledResolution.getWidth() - xSize) / 2;
-        int y = (scaledResolution.getHeight() - ySize) / 2;
+        int x = (scaledResolution.getScaledWidth() - xSize) / 2;
+        int y = (scaledResolution.getScaledHeight() - ySize) / 2;
 
         int adjScaleFactor = Math.max(2, scaledResolution.getScaleFactor());
 
@@ -568,7 +568,7 @@ public class MyModConfigEditor extends GuiElement {
                     mouseY >= innerTop - (20 + innerPadding) / 2 - 9 && mouseY <= innerTop - (20 + innerPadding) / 2 + 9);
 
             if (minimumSearchSize.getValue() > 1) {
-                int strLen = M.C.textRenderer.getStringWidth(searchField.getText()) + 10;
+                int strLen = M.C.fontRendererObj.getStringWidth(searchField.getText()) + 10;
                 int len = Math.max(strLen, minimumSearchSize.getValue());
 
                 if (mouseX >= innerRight - 25 - len && mouseX <= innerRight - 25 &&
@@ -789,8 +789,8 @@ public class MyModConfigEditor extends GuiElement {
     }
 
     public boolean keyboardInput() {
-        Window scaledResolution = new Window(M.C);
-        int width = scaledResolution.getWidth();
+        ScaledResolution scaledResolution = new ScaledResolution(M.C);
+        int width = scaledResolution.getScaledWidth();
 
         int xSize = Math.min(width - 100 / scaledResolution.getScaleFactor(), 500);
 
@@ -802,7 +802,7 @@ public class MyModConfigEditor extends GuiElement {
         if (Keyboard.getEventKeyState()) {
             String old = searchField.getText();
             searchField.keyTyped(Keyboard.getEventCharacter(), Keyboard.getEventKey());
-            searchField.setText(M.C.textRenderer.trimToWidth(
+            searchField.setText(M.C.fontRendererObj.trimStringToWidth(
                     searchField.getText(),
                     innerWidth / 2 - 20
             ));
@@ -844,7 +844,7 @@ public class MyModConfigEditor extends GuiElement {
         return true;
     }
 
-    private void handleKeyboardPresses() {
+    private void handleKeyboardInputPresses() {
         LerpingInteger target = lastMouseX < keyboardScrollXCutoff ? categoryScroll : optionsScroll;
         if (Keyboard.isKeyDown(Keyboard.KEY_DOWN)) {
             target.setTimeToReachTarget(50);

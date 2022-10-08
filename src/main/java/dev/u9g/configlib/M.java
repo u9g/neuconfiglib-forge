@@ -1,7 +1,7 @@
 package dev.u9g.configlib;
 
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
 
 public class M {
-    public static MinecraftClient C = MinecraftClient.getInstance();
+    public static Minecraft C = Minecraft.getMinecraft();
 }

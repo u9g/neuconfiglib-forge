@@ -1,7 +1,7 @@
 package dev.u9g.configlib.util;
 
 import dev.u9g.configlib.M;
-import net.minecraft.client.util.Window;
+import net.minecraft.client.gui.ScaledResolution;
 import org.lwjgl.opengl.GL11;
 
 import java.util.LinkedList;
@@ -38,8 +38,8 @@ public class GlScissorStack {
             return new Bounds(left, top, right, bottom);
         }
 
-        public void set(Window scaledResolution) {
-            int height = M.C.height;
+        public void set(ScaledResolution scaledResolution) {
+            int height = M.C.displayHeight;
             int scale = scaledResolution.getScaleFactor();
             GL11.glScissor(left * scale, height - bottom * scale, (right - left) * scale, (bottom - top) * scale);
         }
@@ -47,7 +47,7 @@ public class GlScissorStack {
 
     private static final LinkedList<Bounds> boundsStack = new LinkedList<>();
 
-    public static void push(int left, int top, int right, int bottom, Window scaledResolution) {
+    public static void push(int left, int top, int right, int bottom, ScaledResolution scaledResolution) {
         if (right < left) {
             int temp = right;
             right = left;
@@ -69,7 +69,7 @@ public class GlScissorStack {
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
     }
 
-    public static void pop(Window scaledResolution) {
+    public static void pop(ScaledResolution scaledResolution) {
         if (!boundsStack.isEmpty()) {
             boundsStack.pop();
         }

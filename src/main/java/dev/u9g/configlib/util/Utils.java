@@ -1,25 +1,25 @@
 package dev.u9g.configlib.util;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.renderer.GlStateManager;
 import dev.u9g.configlib.M;
 import dev.u9g.configlib.util.lerp.LerpingFloat;
 import net.minecraft.block.Block;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.DiffuseLighting;
-import net.minecraft.client.render.Tessellator;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.client.util.Window;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.entity.RenderItem;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.fml.common.Loader;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL14;
@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
 public class Utils {
 
     private static LinkedList<Integer> guiScales = new LinkedList<>();
-    private static Window lastScale = new Window(M.C);
+    private static ScaledResolution lastScale = new ScaledResolution(M.C);
     //Labymod compatibility
     private static FloatBuffer projectionMatrixOld = BufferUtils.createFloatBuffer(16);
     private static FloatBuffer modelviewMatrixOld = BufferUtils.createFloatBuffer(16);
@@ -74,18 +74,6 @@ public class Utils {
 
     public static int lerp(float f, int g, int h) {
         return (int) (g + f * (h - g));
-    }
-
-    public static NbtCompound getSkyBlockTag(ItemStack stack) {
-        if (stack == null) return null;
-        if (!stack.hasNbt()) return null;
-        if (!stack.getNbt().contains("ExtraAttributes")) return null;
-        return stack.getNbt().getCompound("ExtraAttributes");
-    }
-
-    public static boolean isDrill(ItemStack stack) {
-        NbtCompound tag = getSkyBlockTag(stack);
-        return tag != null && tag.contains("drill_fuel");
     }
 
     public static int whatRomanNumeral(String roman) {
@@ -174,7 +162,7 @@ public class Utils {
 //        return ((type == null && false/*Loader.isModLoaded("labymod")*/) || type == checkType); // TODO: fix labymod check
 //    }
 
-    public static void drawStringScaledMaxWidth(String str, TextRenderer fr, float x, float y, boolean shadow, int len, int colour) {
+    public static void drawStringScaledMaxWidth(String str, FontRenderer fr, float x, float y, boolean shadow, int len, int colour) {
         int strLen = fr.getStringWidth(str);
         float factor = len / (float) strLen;
         factor = Math.min(1, factor);
@@ -182,13 +170,13 @@ public class Utils {
         drawStringScaled(str, fr, x, y, shadow, colour, factor);
     }
 
-    public static void drawStringScaled(String str, TextRenderer fr, float x, float y, boolean shadow, int colour, float factor) {
-        GlStateManager.scalef(factor, factor, 1);
-        fr.draw(str, x / factor, y / factor, colour, shadow);
-        GlStateManager.scalef(1 / factor, 1 / factor, 1);
+    public static void drawStringScaled(String str, FontRenderer fr, float x, float y, boolean shadow, int colour, float factor) {
+        GlStateManager.scale(factor, factor, 1);
+        fr.drawString(str, x / factor, y / factor, colour, shadow);
+        GlStateManager.scale(1 / factor, 1 / factor, 1);
     }
 
-    public static void drawStringCenteredScaled(String str, TextRenderer fr, float x, float y, boolean shadow, int len, int colour) {
+    public static void drawStringCenteredScaled(String str, FontRenderer fr, float x, float y, boolean shadow, int len, int colour) {
         int strLen = fr.getStringWidth(str);
         float factor = len / (float) strLen;
         float fontHeight = 8 * factor;
@@ -197,7 +185,7 @@ public class Utils {
     }
 
     public static void drawTexturedRect(float x, float y, float width, float height, float uMin, float uMax, float vMin, float vMax, int filter) {
-        GlStateManager.enableTexture();
+        GlStateManager.enableTexture2D();
         GlStateManager.enableBlend();
         GL14.glBlendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, GL11.GL_ONE, GL11.GL_ONE_MINUS_SRC_ALPHA);
 
@@ -205,12 +193,12 @@ public class Utils {
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, filter);
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder worldrenderer = tessellator.getBuffer();
-        worldrenderer.begin(7, VertexFormats.POSITION_TEXTURE);
-        worldrenderer.vertex(x, y + height, 0.0D).texture(uMin, vMax).next();
-        worldrenderer.vertex(x + width, y + height, 0.0D).texture(uMax, vMax).next();
-        worldrenderer.vertex(x + width, y, 0.0D).texture(uMax, vMin).next();
-        worldrenderer.vertex(x, y, 0.0D).texture(uMin, vMin).next();
+        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        worldrenderer.begin(7, DefaultVertexFormats.POSITION_TEX);
+        worldrenderer.pos(x, y + height, 0.0D).tex(uMin, vMax).endVertex();
+        worldrenderer.pos(x + width, y + height, 0.0D).tex(uMax, vMax).endVertex();
+        worldrenderer.pos(x + width, y, 0.0D).tex(uMax, vMin).endVertex();
+        worldrenderer.pos(x, y, 0.0D).tex(uMin, vMin).endVertex();
         tessellator.draw();
 
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
@@ -235,11 +223,11 @@ public class Utils {
         guiScales.clear();
     }
 
-    public static Window peekGuiScale() {
+    public static ScaledResolution peekGuiScale() {
         return lastScale;
     }
 
-    public static Window pushGuiScale(int scale) {
+    public static ScaledResolution pushGuiScale(int scale) {
         if (guiScales.size() == 0) {
             if (/*Loader.isModLoaded("labymod")*/false) { // Fix labymod detection
                 GL11.glGetFloat(GL11.GL_PROJECTION_MATRIX, projectionMatrixOld);
@@ -253,30 +241,30 @@ public class Utils {
             }
         } else {
             if (scale == 0) {
-                guiScales.push(M.C.options.guiScale);
+                guiScales.push(M.C.gameSettings.guiScale);
             } else {
                 guiScales.push(scale);
             }
         }
 
-        int newScale = guiScales.size() > 0 ? Math.max(0, Math.min(4, guiScales.peek())) : M.C.options.guiScale;
-        if (newScale == 0) newScale = M.C.options.guiScale;
+        int newScale = guiScales.size() > 0 ? Math.max(0, Math.min(4, guiScales.peek())) : M.C.gameSettings.guiScale;
+        if (newScale == 0) newScale = M.C.gameSettings.guiScale;
 
-        int oldScale = M.C.options.guiScale;
-        M.C.options.guiScale = newScale;
-        Window scaledresolution = new Window(M.C);
-        M.C.options.guiScale = oldScale;
+        int oldScale = M.C.gameSettings.guiScale;
+        M.C.gameSettings.guiScale = newScale;
+        ScaledResolution scaledresolution = new ScaledResolution(M.C);
+        M.C.gameSettings.guiScale = oldScale;
 
         if (guiScales.size() > 0) {
-            GlStateManager.viewPort(0, 0, M.C.width, M.C.height);
+            GlStateManager.viewport(0, 0, M.C.displayWidth, M.C.displayHeight);
             GlStateManager.matrixMode(GL11.GL_PROJECTION);
             GlStateManager.loadIdentity();
             GlStateManager.ortho(0.0D, scaledresolution.getScaledWidth(), scaledresolution.getScaledHeight(), 0.0D, 1000.0D, 3000.0D);
             GlStateManager.matrixMode(GL11.GL_MODELVIEW);
             GlStateManager.loadIdentity();
-            GlStateManager.translatef(0.0F, 0.0F, -2000.0F);
+            GlStateManager.translate(0.0F, 0.0F, -2000.0F);
         } else {
-            if (/*Loader.isModLoaded("labymod")*/false && projectionMatrixOld.limit() > 0 && modelviewMatrixOld.limit() > 0) { // todo: fix labymod detection
+            if (Loader.isModLoaded("labymod") && projectionMatrixOld.limit() > 0 && modelviewMatrixOld.limit() > 0) {
                 GlStateManager.matrixMode(GL11.GL_PROJECTION);
                 GL11.glLoadMatrix(projectionMatrixOld);
                 GlStateManager.matrixMode(GL11.GL_MODELVIEW);
@@ -287,7 +275,7 @@ public class Utils {
                 GlStateManager.ortho(0.0D, scaledresolution.getScaledWidth(), scaledresolution.getScaledHeight(), 0.0D, 1000.0D, 3000.0D);
                 GlStateManager.matrixMode(GL11.GL_MODELVIEW);
                 GlStateManager.loadIdentity();
-                GlStateManager.translatef(0.0F, 0.0F, -2000.0F);
+                GlStateManager.translate(0.0F, 0.0F, -2000.0F);
             }
         }
 
@@ -295,92 +283,15 @@ public class Utils {
         return scaledresolution;
     }
 
-    public static void drawStringCentered(String str, TextRenderer fr, float x, float y, boolean shadow, int colour) {
+    public static void drawStringCentered(String str, FontRenderer fr, float x, float y, boolean shadow, int colour) {
         int strLen = fr.getStringWidth(str);
 
         float x2 = x - strLen / 2f;
-        float y2 = y - fr.fontHeight / 2f;
+        float y2 = y - fr.FONT_HEIGHT / 2f;
 
         GL11.glTranslatef(x2, y2, 0);
-        fr.draw(str, 0, 0, colour, shadow);
+        fr.drawString(str, 0, 0, colour, shadow);
         GL11.glTranslatef(-x2, -y2, 0);
-    }
-
-    public static void renderWaypointText(String str, BlockPos loc, float partialTicks) {
-        GlStateManager.alphaFunc(516, 0.1F);
-
-        GlStateManager.pushMatrix();
-
-        Entity viewer = M.C.getCameraEntity();
-        double viewerX = viewer.prevTickX + (viewer.x - viewer.prevTickX) * partialTicks;
-        double viewerY = viewer.prevTickY + (viewer.y - viewer.prevTickY) * partialTicks;
-        double viewerZ = viewer.prevTickZ + (viewer.z - viewer.prevTickZ) * partialTicks;
-
-        double x = loc.getX() - viewerX;
-        double y = loc.getY() - viewerY - viewer.getEyeHeight();
-        double z = loc.getZ() - viewerZ;
-
-        double distSq = x * x + y * y + z * z;
-        double dist = Math.sqrt(distSq);
-        if (distSq > 144) {
-            x *= 12 / dist;
-            y *= 12 / dist;
-            z *= 12 / dist;
-        }
-        GlStateManager.translated(x, y, z);
-        GlStateManager.translatef(0, viewer.getEyeHeight(), 0);
-
-        drawNametag(str);
-
-        GlStateManager.rotatef(-M.C.getEntityRenderManager().yaw, 0.0F, 1.0F, 0.0F);
-        GlStateManager.rotatef(M.C.getEntityRenderManager().pitch, 1.0F, 0.0F, 0.0F);
-        GlStateManager.translatef(0, -0.25f, 0);
-        GlStateManager.rotatef(-M.C.getEntityRenderManager().pitch, 1.0F, 0.0F, 0.0F);
-        GlStateManager.rotatef(M.C.getEntityRenderManager().yaw, 0.0F, 1.0F, 0.0F);
-
-        drawNametag(Formatting.YELLOW.toString() + Math.round(dist) + "m");
-
-        GlStateManager.popMatrix();
-
-        GlStateManager.disableLighting();
-    }
-
-    public static void drawNametag(String str) {
-        TextRenderer fontrenderer = M.C.textRenderer;
-        float f = 1.6F;
-        float f1 = 0.016666668F * f;
-        GlStateManager.pushMatrix();
-        GL11.glNormal3f(0.0F, 1.0F, 0.0F);
-        GlStateManager.rotatef(-M.C.getEntityRenderManager().yaw, 0.0F, 1.0F, 0.0F);
-        GlStateManager.rotatef(M.C.getEntityRenderManager().pitch, 1.0F, 0.0F, 0.0F);
-        GlStateManager.scalef(-f1, -f1, f1);
-        GlStateManager.disableLighting();
-        GlStateManager.depthMask(false);
-        GlStateManager.disableDepthTest();
-        GlStateManager.enableBlend();
-        GlStateManager.blendFuncSeparate(770, 771, 1, 0);
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder worldrenderer = tessellator.getBuffer();
-        int i = 0;
-
-        int j = fontrenderer.getStringWidth(str) / 2;
-        GlStateManager.disableTexture();
-        worldrenderer.begin(7, VertexFormats.POSITION_COLOR);
-        worldrenderer.vertex(-j - 1, -1 + i, 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).next();
-        worldrenderer.vertex(-j - 1, 8 + i, 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).next();
-        worldrenderer.vertex(j + 1, 8 + i, 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).next();
-        worldrenderer.vertex(j + 1, -1 + i, 0.0D).color(0.0F, 0.0F, 0.0F, 0.25F).next();
-        tessellator.draw();
-        GlStateManager.enableTexture();
-        fontrenderer.draw(str, -fontrenderer.getStringWidth(str) / 2, i, 553648127);
-        GlStateManager.depthMask(true);
-
-        fontrenderer.draw(str, -fontrenderer.getStringWidth(str) / 2, i, -1);
-
-        GlStateManager.enableDepthTest();
-        GlStateManager.enableBlend();
-        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-        GlStateManager.popMatrix();
     }
 
     public static String formattedNumber(int number, int numberToFormatAt) {
@@ -396,25 +307,6 @@ public class Utils {
 
     public static boolean hasEffectOverride = false;
     public static boolean disableCustomDungColours = false;
-
-    public static void drawItemStackWithoutGlint(ItemStack stack, int x, int y) {
-        ItemRenderer itemRender = M.C.getItemRenderer();
-
-        disableCustomDungColours = true;
-        DiffuseLighting.enable();
-        itemRender.zOffset = -145; //Negates the z-offset of the below method.
-        hasEffectOverride = true;
-        try {
-            itemRender.renderInGuiWithOverrides(stack, x, y);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } //Catch exceptions to ensure that hasEffectOverride is set back to false.
-        itemRender.renderGuiItemOverlay(M.C.textRenderer, stack, x, y, null);
-        hasEffectOverride = false;
-        itemRender.zOffset = 0;
-        DiffuseLighting.disable();
-        disableCustomDungColours = false;
-    }
 
     /**
      * Removes colorcodes
@@ -434,23 +326,23 @@ public class Utils {
         float f5 = (float) (endColor >> 16 & 255) / 255.0F;
         float f6 = (float) (endColor >> 8 & 255) / 255.0F;
         float f7 = (float) (endColor & 255) / 255.0F;
-        GlStateManager.disableTexture();
+        GlStateManager.disableTexture2D();
         GlStateManager.enableBlend();
-        GlStateManager.disableAlphaTest();
-        GlStateManager.blendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.disableAlpha();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.shadeModel(7425);
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder worldrenderer = tessellator.getBuffer();
-        worldrenderer.begin(7, VertexFormats.POSITION_COLOR);
-        worldrenderer.vertex(right, top, 0).color(f1, f2, f3, f).next();
-        worldrenderer.vertex(left, top, 0).color(f1, f2, f3, f).next();
-        worldrenderer.vertex(left, bottom, 0).color(f5, f6, f7, f4).next();
-        worldrenderer.vertex(right, bottom, 0).color(f5, f6, f7, f4).next();
+        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        worldrenderer.begin(7, DefaultVertexFormats.POSITION_COLOR);
+        worldrenderer.pos(right, top, 0).color(f1, f2, f3, f).endVertex();
+        worldrenderer.pos(left, top, 0).color(f1, f2, f3, f).endVertex();
+        worldrenderer.pos(left, bottom, 0).color(f5, f6, f7, f4).endVertex();
+        worldrenderer.pos(right, bottom, 0).color(f5, f6, f7, f4).endVertex();
         tessellator.draw();
         GlStateManager.shadeModel(7424);
         GlStateManager.disableBlend();
-        GlStateManager.enableAlphaTest();
-        GlStateManager.enableTexture();
+        GlStateManager.enableAlpha();
+        GlStateManager.enableTexture2D();
     }
 
     public static void drawTexturedRectNoBlend(
@@ -464,111 +356,30 @@ public class Utils {
             float vMax,
             int filter
     ) {
-        GlStateManager.enableTexture();
+        GlStateManager.enableTexture2D();
 
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, filter);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, filter);
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder worldrenderer = tessellator.getBuffer();
-        worldrenderer.begin(7, VertexFormats.POSITION_TEXTURE);
+        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        worldrenderer.begin(7, DefaultVertexFormats.POSITION_TEX);
         worldrenderer
-                .vertex(x, y + height, 0.0D)
-                .texture(uMin, vMax).next();
+                .pos(x, y + height, 0.0D)
+                .tex(uMin, vMax).endVertex();
         worldrenderer
-                .vertex(x + width, y + height, 0.0D)
-                .texture(uMax, vMax).next();
+                .pos(x + width, y + height, 0.0D)
+                .tex(uMax, vMax).endVertex();
         worldrenderer
-                .vertex(x + width, y, 0.0D)
-                .texture(uMax, vMin).next();
+                .pos(x + width, y, 0.0D)
+                .tex(uMax, vMin).endVertex();
         worldrenderer
-                .vertex(x, y, 0.0D)
-                .texture(uMin, vMin).next();
+                .pos(x, y, 0.0D)
+                .tex(uMin, vMin).endVertex();
         tessellator.draw();
 
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
         GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-    }
-
-    public static ItemStack createItemStack(Item item, String displayName, String... lore) {
-        return createItemStack(item, displayName, 0, lore);
-    }
-
-    public static ItemStack createItemStack(Block item, String displayName, String... lore) {
-        return createItemStack(Item.fromBlock(item), displayName, lore);
-    }
-
-    public static ItemStack createItemStack(Item item, String displayName, int damage, String... lore) {
-        ItemStack stack = new ItemStack(item, 1, damage);
-        NbtCompound tag = new NbtCompound();
-        NbtCompound display = new NbtCompound();
-        NbtList Lore = new NbtList();
-
-        for (String line : lore) {
-            Lore.add(new NbtString(line));
-        }
-
-        display.putString("Name", displayName);
-        display.put("Lore", Lore);
-
-        tag.put("display", display);
-        tag.putInt("HideFlags", 254);
-
-        stack.setNbt(tag);
-
-        return stack;
-    }
-
-    public static boolean doesStackMatchSearch(ItemStack stack, String query) {
-        if (query.startsWith("title:")) {
-            query = query.substring(6);
-            return searchString(stack.getName(), query);
-        } else if (query.startsWith("desc:")) {
-            query = query.substring(5);
-            String lore = "";
-            NbtCompound tag = stack.getNbt();
-            if (tag != null) {
-                NbtCompound display = tag.getCompound("display");
-                if (display.contains("Lore", 9)) {
-                    NbtList list = display.getList("Lore", 8);
-                    for (int i = 0; i < list.size(); i++) {
-                        lore += list.getString(i) + " ";
-                    }
-                }
-            }
-            return searchString(lore, query);
-        }/* else if (*//*query.startsWith("id:")*//*false) {
-//            query = query.substring(3);
-            // TODO: do this with cosmic items?
-//            String internalName = getInternalNameForItem(stack);
-//            return query.equalsIgnoreCase(internalName);
-        }*/ else {
-            boolean result = false;
-            if (!query.trim().contains(" ")) {
-                StringBuilder sb = new StringBuilder();
-                for (char c : query.toCharArray()) {
-                    sb.append(c).append(" ");
-                }
-                result = result || searchString(stack.getName(), sb.toString());
-            }
-            result = result || searchString(stack.getName(), query);
-
-            String lore = "";
-            NbtCompound tag = stack.getNbt();
-            if (tag != null) {
-                NbtCompound display = tag.getCompound("display");
-                if (display.contains("Lore", 9)) {
-                    NbtList list = display.getList("Lore", 8);
-                    for (int i = 0; i < list.size(); i++) {
-                        lore += list.getString(i) + " ";
-                    }
-                }
-            }
-
-            result = result || searchString(lore, query);
-
-            return result;
-        }
     }
 
 //    /**
@@ -655,15 +466,15 @@ public class Utils {
 
     public static void drawItemStackWithText(ItemStack stack, int x, int y, String text) {
         if (stack == null) return;
-        ItemRenderer itemRender = M.C.getItemRenderer();
+        RenderItem itemRender = Minecraft.getMinecraft().getRenderItem();
 
         disableCustomDungColours = true;
-        DiffuseLighting.enable();
-        itemRender.zOffset = -145; //Negates the z-offset of the below method.
-        itemRender.renderInGuiWithOverrides(stack, x, y);
-        itemRender.renderGuiItemOverlay(M.C.textRenderer, stack, x, y, text);
-        itemRender.zOffset = 0;
-        DiffuseLighting.disable();
+        RenderHelper.enableGUIStandardItemLighting();
+        itemRender.zLevel = -145; //Negates the z-offset of the below method.
+        itemRender.renderItemAndEffectIntoGUI(stack, x, y);
+        itemRender.renderItemOverlayIntoGUI(Minecraft.getMinecraft().fontRendererObj, stack, x, y, text);
+        itemRender.zLevel = 0;
+        RenderHelper.disableStandardItemLighting();
         disableCustomDungColours = false;
     }
 
@@ -674,7 +485,7 @@ public class Utils {
             final int screenWidth,
             final int screenHeight,
             final int maxTextWidth,
-            TextRenderer font,
+            FontRenderer font,
             boolean tooltipBorderColours,
             int tooltipBorderOpacity
     ) {
@@ -690,16 +501,16 @@ public class Utils {
             final int screenWidth,
             final int screenHeight,
             final int maxTextWidth,
-            TextRenderer font,
+            FontRenderer font,
             boolean coloured,
             boolean tooltipBorderColours,
             int tooltipBorderOpacity
     ) {
         if (!textLines.isEmpty()) {
             GlStateManager.disableRescaleNormal();
-            DiffuseLighting.disable();
+            RenderHelper.disableStandardItemLighting();
             GlStateManager.disableLighting();
-            GlStateManager.enableDepthTest();
+            GlStateManager.enableDepth();
             int tooltipTextWidth = 0;
 
             for (String textLine : textLines) {
@@ -737,7 +548,7 @@ public class Utils {
                 List<String> wrappedTextLines = new ArrayList<>();
                 for (int i = 0; i < textLines.size(); i++) {
                     String textLine = textLines.get(i);
-                    List<String> wrappedLine = font.wrapLines(textLine, tooltipTextWidth);
+                    List<String> wrappedLine = font.listFormattedStringToWidth(textLine, tooltipTextWidth);
                     if (i == 0) {
                         titleLinesCount = wrappedLine.size();
                     }
@@ -766,7 +577,7 @@ public class Utils {
             if (textLines.size() > 1) {
                 tooltipHeight += (textLines.size() - 1) * 10;
                 if (textLines.size() > titleLinesCount) {
-                    tooltipHeight += 2; // gap between title lines and next lines
+                    tooltipHeight += 2; // gap between title lines and endVertex lines
                 }
             }
 
@@ -884,10 +695,10 @@ public class Utils {
                     borderColorEnd
             );
 
-            GlStateManager.disableDepthTest();
+            GlStateManager.disableDepth();
             for (int lineNumber = 0; lineNumber < textLines.size(); ++lineNumber) {
                 String line = textLines.get(lineNumber);
-                font.drawWithShadow(line, (float) tooltipX, (float) tooltipY, -1);
+                font.drawStringWithShadow(line, (float) tooltipX, (float) tooltipY, -1);
 
                 if (lineNumber + 1 == titleLinesCount) {
                     tooltipY += 2;
@@ -897,8 +708,8 @@ public class Utils {
             }
 
             GlStateManager.enableLighting();
-            GlStateManager.enableDepthTest();
-            DiffuseLighting.enableNormally();
+            GlStateManager.enableDepth();
+            RenderHelper.enableStandardItemLighting();
             GlStateManager.enableRescaleNormal();
         }
         GlStateManager.disableLighting();
@@ -922,25 +733,25 @@ public class Utils {
         float endGreen = (float) (endColor >> 8 & 255) / 255.0F;
         float endBlue = (float) (endColor & 255) / 255.0F;
 
-        GlStateManager.disableTexture();
+        GlStateManager.disableTexture2D();
         GlStateManager.enableBlend();
-        GlStateManager.disableAlphaTest();
-        GlStateManager.blendFuncSeparate(770, 771, 1, 0);
+        GlStateManager.disableAlpha();
+        GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
         GlStateManager.shadeModel(7425);
 
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder worldrenderer = tessellator.getBuffer();
-        worldrenderer.begin(7, VertexFormats.POSITION_COLOR);
-        worldrenderer.vertex(right, top, zLevel).color(startRed, startGreen, startBlue, startAlpha).next();
-        worldrenderer.vertex(left, top, zLevel).color(startRed, startGreen, startBlue, startAlpha).next();
-        worldrenderer.vertex(left, bottom, zLevel).color(endRed, endGreen, endBlue, endAlpha).next();
-        worldrenderer.vertex(right, bottom, zLevel).color(endRed, endGreen, endBlue, endAlpha).next();
+        WorldRenderer worldrenderer = tessellator.getWorldRenderer();
+        worldrenderer.begin(7, DefaultVertexFormats.POSITION_COLOR);
+        worldrenderer.pos(right, top, zLevel).color(startRed, startGreen, startBlue, startAlpha).endVertex();
+        worldrenderer.pos(left, top, zLevel).color(startRed, startGreen, startBlue, startAlpha).endVertex();
+        worldrenderer.pos(left, bottom, zLevel).color(endRed, endGreen, endBlue, endAlpha).endVertex();
+        worldrenderer.pos(right, bottom, zLevel).color(endRed, endGreen, endBlue, endAlpha).endVertex();
         tessellator.draw();
 
         GlStateManager.shadeModel(7424);
         GlStateManager.disableBlend();
-        GlStateManager.enableAlphaTest();
-        GlStateManager.enableTexture();
+        GlStateManager.enableAlpha();
+        GlStateManager.enableTexture2D();
     }
 
     private static final Pattern CHROMA_REPLACE_PATTERN = Pattern.compile("\u00a7z(.+?)(?=\u00a7|$)");
@@ -948,14 +759,14 @@ public class Utils {
         return chromaString(str, 0, false, chromaSpeed);
     }
     private static long startTime = 0;
-    private static final Formatting[] rainbow = new Formatting[]{
-            Formatting.RED,
-            Formatting.GOLD,
-            Formatting.YELLOW,
-            Formatting.GREEN,
-            Formatting.AQUA,
-            Formatting.LIGHT_PURPLE,
-            Formatting.DARK_PURPLE
+    private static final EnumChatFormatting[] rainbow = new EnumChatFormatting[]{
+            EnumChatFormatting.RED,
+            EnumChatFormatting.GOLD,
+            EnumChatFormatting.YELLOW,
+            EnumChatFormatting.GREEN,
+            EnumChatFormatting.AQUA,
+            EnumChatFormatting.LIGHT_PURPLE,
+            EnumChatFormatting.DARK_PURPLE
     };
 
     public static String chromaString(String str, float offset, boolean bold, int chromaSpeed) {
@@ -972,12 +783,12 @@ public class Utils {
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
             int index = ((int) (offset + len / 12f - (currentTimeMillis - startTime) / chromaSpeed)) % rainbow.length;
-            len += M.C.textRenderer.method_949(c);
+            len += M.C.fontRendererObj.getCharWidth(c);
             if (bold) len++;
 
             if (index < 0) index += rainbow.length;
             rainbowText.append(rainbow[index]);
-            if (bold) rainbowText.append(Formatting.BOLD);
+            if (bold) rainbowText.append(EnumChatFormatting.BOLD);
             rainbowText.append(c);
         }
         return rainbowText.toString();

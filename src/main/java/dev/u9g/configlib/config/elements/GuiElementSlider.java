@@ -1,10 +1,10 @@
 package dev.u9g.configlib.config.elements;
 
-import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager;
 import dev.u9g.configlib.M;
 import dev.u9g.configlib.config.GuiTextures;
 import dev.u9g.configlib.util.Utils;
-import net.minecraft.client.util.Window;
+import net.minecraft.client.gui.ScaledResolution;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
@@ -45,8 +45,8 @@ public class GuiElementSlider extends GuiElement {
 
     @Override
     public void render() {
-        final Window scaledResolution = new Window(M.C);
-        int mouseX = Mouse.getX() * scaledResolution.getWidth() / M.C.width;
+        final ScaledResolution scaledResolution = new ScaledResolution(M.C);
+        int mouseX = Mouse.getX() * scaledResolution.getScaledWidth() / M.C.displayWidth;
 
         float value = this.value;
         if (clicked) {
@@ -58,7 +58,7 @@ public class GuiElementSlider extends GuiElement {
         float sliderAmount = Math.max(0, Math.min(1, (value - minValue) / (maxValue - minValue)));
         int sliderAmountI = (int) (width * sliderAmount);
 
-        GlStateManager.color4f(1f, 1f, 1f, 1f);
+        GlStateManager.color(1f, 1f, 1f, 1f);
         M.C.getTextureManager().bindTexture(GuiTextures.slider_on_cap);
         Utils.drawTexturedRect(x, y, 4, HEIGHT, GL11.GL_NEAREST);
         M.C.getTextureManager().bindTexture(GuiTextures.slider_off_cap);

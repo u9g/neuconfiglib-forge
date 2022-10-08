@@ -1,6 +1,6 @@
 package dev.u9g.configlib.config;
 
-import net.minecraft.util.Identifier;
+import net.minecraft.util.ResourceLocation;
 
 public interface Config {
     void executeRunnable(String runnableId);
@@ -9,10 +9,10 @@ public interface Config {
     Badge[] getBadges();
 
     final class Badge {
-        public final Identifier icon;
+        public final ResourceLocation icon;
         public final String url;
 
-        public Badge(Identifier icon, String url) {
+        public Badge(ResourceLocation icon, String url) {
             this.icon = icon;
             this.url = url;
         }
